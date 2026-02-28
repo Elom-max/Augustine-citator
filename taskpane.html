@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Augustinus Citator</title>
+  
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  
+  <script>
+    var officeReady = false;
+    Office.onReady(function(info) {
+      if (info.host === Office.HostType.Word) {
+        officeReady = true;
+      }
+    });
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400;1,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --parchment: #f5f0e8; --parchment-deep: #ebe4d4; --ink: #2c1810;
+      --ink-light: #5a4232; --ink-faded: #8a7a6a; --vermillion: #b8422c;
+      --vermillion-light: #d4654f; --gold: #c9a84c; --border: #d4c9b8;
+      --shadow: rgba(44, 24, 16, 0.08); --radius: 6px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif; font-size: 13px; color: var(--ink);
+      background: var(--parchment); line-height: 1.5; height: 100vh;
+      overflow: hidden; display: flex; flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, var(--ink) 0%, #3d2a1e 100%);
+      color: var(--parchment); padding: 14px 16px; flex-shrink: 0;
+      position: relative; overflow: hidden;
+    }
+    .header::after {
+      content: '✝'; position: absolute; right: 16px; top: 50%;
+      transform: translateY(-50%); font-size: 28px; opacity: 0.15; color: var(--gold);
+    }
+    .header h1 { font-family: 'Crimson Pro', serif; font-size: 18px; font-weight: 500; letter-spacing: 0.5px; }
+    .header p { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; border-bottom: 2px solid var(--border); background: var(--parchment-deep); flex-shrink: 0; }
+    .tab {
+      flex: 1; padding: 10px 8px; text-align: center; font-size: 12px; font-weight: 500;
+      cursor: pointer; border: none; background: none; color: var(--ink-faded);
+      transition: all 0.2s; position: relative;
+    }
+    .tab:hover { color: var(--ink-light); }
+    .tab.active { color: var(--vermillion); font-weight: 600; }
+    .tab.active::after {
+      content: ''; position: absolute; bottom: -2px; left: 20%;
+      width: 60%; height: 2px; background: var(--vermillion);
+    }
+
+    /* ── Main Content ── */
+    .content { flex: 1; overflow-y: auto; padding: 12px 14px; }
+    .content::-webkit-scrollbar { width: 6px; }
+    .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Search & Filters ── */
+    .search-box { position: relative; margin-bottom: 12px; }
+    .search-box input {
+      width: 100%; padding: 9px 12px 9px 32px; border: 1.5px solid var(--border);
+      border-radius: var(--radius); font-family: inherit; font-size: 13px;
+    }
+    .search-box input:focus { outline: none; border-color: var(--vermillion); }
+    .search-box .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--ink-faded); }
+    
+    .filters { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+    .filter-chip {
+      padding: 4px 10px; border: 1px solid var(--border); border-radius: 20px;
+      font-size: 11px; cursor: pointer; background: #fff; color: var(--ink-light); transition: all 0.15s;
+    }
+    .filter-chip:hover { border-color: var(--vermillion-light); }
+    .filter-chip.active { background: var(--vermillion); color: #fff; border-color: var(--vermillion); }
+    .results-count { font-size: 11px; color: var(--ink-faded); margin-bottom: 8px; }
+
+    /* ── Work Cards ── */
+    .work-card {
+      background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 10px 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s;
+    }
+    .work-card:hover { border-color: var(--vermillion-light); box-shadow: 0 2px 8px var(--shadow); }
+    .work-card.selected { border-color: var(--vermillion); border-width: 2px; background: #fdf8f5; }
+    .work-title { font-family: 'Crimson Pro', serif; font-size: 14px; font-weight: 600; font-style: italic; color: var(--ink); }
+    .work-latin { font-size: 11px; color: var(--ink-faded); margin-top: 1px; }
+    .work-meta { display: flex; gap: 8px; margin-top: 4px; font-size: 11px; }
+    .work-meta span { padding: 1px 6px; background: var(--parchment); border-radius: 3px; color: var(--ink-light); }
+    .work-meta .abbrev { font-weight: 600; color: var(--vermillion); background: #fef0ec; }
+
+    /* ── Forms & Citation Builder ── */
+    .citation-builder { background: #fff; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px; margin-top: 12px; }
+    .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .form-group { flex: 1; margin-bottom: 8px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--ink-light); margin-bottom: 3px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 7px 9px; border: 1px solid var(--border); border-radius: 4px; font-family: inherit; font-size: 12px;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--vermillion); }
+    .form-group textarea { resize: vertical; min-height: 40px; font-family: 'Crimson Pro', serif; font-size: 13px; }
+    
+    .checkbox-group { display: flex; align-items: center; gap: 5px; font-size: 12px; margin-top: 4px; }
+    .radio-group { margin-bottom: 12px; display: flex; gap: 10px; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .auto-badge { background: var(--vermillion); color: white; padding: 2px 5px; border-radius: 3px; font-size: 9px; vertical-align: middle; margin-left: 5px; }
+
+    /* ── Preview & Buttons ── */
+    .preview-box { background: var(--parchment); border: 1px dashed var(--vermillion-light); border-radius: 4px; padding: 10px 12px; margin: 10px 0; font-family: 'Crimson Pro', serif; font-size: 13px; line-height: 1.6; }
+    .btn { width: 100%; padding: 9px 16px; background: var(--vermillion); color: #fff; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn:hover { background: #a03822; }
+    .btn:disabled { background: var(--border); cursor: not-allowed; }
+    .hidden { display: none !important; }
+    
+    .history-item { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 6px; font-size: 12px; cursor: pointer; }
+    .history-ref { font-family: 'Crimson Pro', serif; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Augustinus Citator</h1>
+    <p>Citation tool for the works of Augustine of Hippo by Elom</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="cite">Cite</button>
+    <button class="tab" data-tab="history">History</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </div>
+
+  <div class="content">
+    
+    <div id="tab-cite" class="tab-panel active">
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="searchInput" placeholder="Rechercher une œuvre (ex: conf, trin, civ)..." autocomplete="off"/>
+      </div>
+
+      <div class="filters" id="categoryFilters"></div>
+      <div class="results-count" id="resultsCount"></div>
+      <div id="worksList"></div>
+
+      <div id="citationBuilder" class="citation-builder hidden">
+        <h3 style="font-family: 'Crimson Pro'; margin-bottom: 10px; font-size: 15px; color: var(--ink);">
+          <span id="builderTitle">Titre</span>
+        </h3>
+
+        <div class="radio-group" id="citeTypeGroup">
+          <label><input type="radio" name="citeType" value="full"/> 1ère note (Complète)</label>
+          <label><input type="radio" name="citeType" value="short"/> Note abrégée <span id="autoBadge" class="auto-badge hidden">Auto</span></label>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group"><label>Livre (Liber)</label><input type="text" id="citeBook" placeholder="ex: X"/></div>
+          <div class="form-group"><label>Chap. (Caput)</label><input type="text" id="citeChapter" placeholder="ex: 27"/></div>
+          <div class="form-group"><label>Paragraphe</label><input type="text" id="citeParagraph" placeholder="ex: 38"/></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group"><label>Page / Col.</label><input type="text" id="citePage" placeholder="ex: 175"/></div>
+          <div class="form-group"><label>Vol. spécifique (si besoin)</label><input type="text" id="citeVol" placeholder="ex: CCSL 48"/></div>
+        </div>
+
+        <div class="form-group">
+          <label>Texte Latin (sans italique selon KUL)</label>
+          <textarea id="citeLatin" placeholder="Sero te amavi, pulchritudo..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Texte Traduit</label>
+          <textarea id="citeTrans" placeholder="Bien tard je t'ai aimée..."></textarea>
+          <div class="checkbox-group">
+            <input type="checkbox" id="ownTranslation"/>
+            <label for="ownTranslation" id="ownTransLabel">Ceci est ma propre traduction</label>
+          </div>
+        </div>
+
+        <div class="form-group" id="translatorDiv"><label>Traducteur externe</label><input type="text" id="citeTranslator" placeholder="ex: M. Moreau"/></div>
+
+        <label style="font-size: 10px; color: var(--ink-faded); text-transform: uppercase;">Aperçu de la note de bas de page</label>
+        <div class="preview-box" id="citationPreview">Sélectionnez une œuvre...</div>
+
+        <button class="btn" id="insertBtn" disabled>Insérer en note de bas de page</button>
+      </div>
+    </div>
+
+    <div id="tab-history" class="tab-panel">
+      <div id="historyList">
+        <p style="text-align:center; color: var(--ink-faded); margin-top:20px;">Aucune citation récente.</p>
+      </div>
+    </div>
+
+    <div id="tab-settings" class="tab-panel">
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label>Langue de votre document (Ajuste les titres et balises)</label>
+        <select id="docLang">
+          <option value="FR">Français</option>
+          <option value="EN">English</option>
+          <option value="NL">Nederlands</option>
+        </select>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label>Édition / Série par défaut</label>
+        <select id="citeStyle">
+          <option value="cchrsl">CChr SL (KU Leuven)</option>
+          <option value="ccsl">CCSL (Standard)</option>
+          <option value="csel">CSEL</option>
+          <option value="ba">BA (Bibliothèque Augustinienne)</option>
+          <option value="pl">PL (Migne Patrologia Latina)</option>
+          <option value="wsa">WSA (Works of Saint Augustine)</option>
+        </select>
+      </div>
+
+      <div class="checkbox-group" style="margin-bottom: 10px; border-top: 1px solid var(--border); padding-top: 10px;">
+        <input type="checkbox" id="optIncludeCity"/>
+        <label for="optIncludeCity">Inclure la ville d'édition (Ancienne norme pré-CMOS 18)</label>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+// ═══════════════════════════════════════════════
+// BASE DE DONNÉES COMPLÈTE (Avec métadonnées d'édition)
+// ═══════════════════════════════════════════════
+const WORKS = [
+  { id: "conf", abbrev: "conf.", latin: "Confessiones", english: "Confessions", french: "Les Confessions", date: "397–401", books: 13, category: "major", cchrsl: "27", city: "Turnhout", pub: "Brepols", year: "1981", editor: "L. Verheijen", csel: "33", pl: "32", ba: "13-14", wsa: "I/1" },
+  { id: "civ", abbrev: "civ.", latin: "De civitate Dei", english: "The City of God", french: "La Cité de Dieu", date: "413–426", books: 22, category: "major", cchrsl: "47-48", city: "Turnhout", pub: "Brepols", year: "1955", editor: "B. Dombart & A. Kalb", csel: "40", pl: "41", ba: "33-37", wsa: "I/6-7" },
+  { id: "trin", abbrev: "trin.", latin: "De Trinitate", english: "The Trinity", french: "La Trinité", date: "399–426", books: 15, category: "major", cchrsl: "50-50A", city: "Turnhout", pub: "Brepols", year: "1968", editor: "W. J. Mountain", pl: "42", ba: "15-16", wsa: "I/5" },
+  { id: "doctr_chr", abbrev: "doctr. chr.", latin: "De doctrina christiana", english: "On Christian Teaching", french: "La Doctrine chrétienne", date: "396–427", books: 4, category: "major", cchrsl: "32", city: "Turnhout", pub: "Brepols", year: "1962", editor: "J. Martin", csel: "80", pl: "34", ba: "11/2", wsa: "I/11" },
+  { id: "gn_litt", abbrev: "Gn. litt.", latin: "De Genesi ad litteram", english: "The Literal Meaning of Genesis", french: "La Genèse au sens littéral", date: "401–415", books: 12, category: "exegetical", cchrsl: "", city: "Vienna", pub: "Tempsky", year: "1894", editor: "J. Zycha", csel: "28/1", pl: "34", ba: "48-49", wsa: "I/13" },
+  { id: "pecc_mer", abbrev: "pecc. mer.", latin: "De peccatorum meritis et remissione", english: "On the Merits and Forgiveness of Sins", french: "Des mérites et de la rémission des péchés", date: "411–412", books: 3, category: "anti-pelagian", csel: "60", city: "Vienna", pub: "Tempsky", year: "1913", editor: "C. Urba & J. Zycha", pl: "44", ba: "21", wsa: "I/23" },
+  { id: "spir_et_litt", abbrev: "spir. et litt.", latin: "De spiritu et littera", english: "On the Spirit and the Letter", french: "De l'esprit et de la lettre", date: "412", books: 1, category: "anti-pelagian", csel: "60", pub: "Tempsky", year: "1913", editor: "C. Urba", pl: "44", ba: "21", wsa: "I/23" },
+  { id: "nat_et_gr", abbrev: "nat. et gr.", latin: "De natura et gratia", english: "On Nature and Grace", french: "De la nature et de la grâce", date: "413–415", books: 1, category: "anti-pelagian", csel: "60", pub: "Tempsky", year: "1913", editor: "C. Urba", pl: "44", ba: "21", wsa: "I/23" },
+  { id: "gr_et_lib_arb", abbrev: "gr. et lib. arb.", latin: "De gratia et libero arbitrio", english: "On Grace and Free Choice", french: "De la grâce et du libre arbitre", date: "426–427", books: 1, category: "anti-pelagian", pl: "44", ba: "24", wsa: "I/26" },
+  { id: "praed_sanct", abbrev: "praed. sanct.", latin: "De praedestinatione sanctorum", english: "On the Predestination of the Saints", french: "De la prédestination des saints", date: "428–429", books: 1, category: "anti-pelagian", pl: "44", ba: "24", wsa: "I/26" },
+  { id: "persev", abbrev: "persev.", latin: "De dono perseverantiae", english: "On the Gift of Perseverance", french: "Du don de persévérance", date: "428–429", books: 1, category: "anti-pelagian", pl: "45", ba: "24", wsa: "I/26" },
+  { id: "corrept", abbrev: "corrept.", latin: "De correptione et gratia", english: "On Rebuke and Grace", french: "De la correction et de la grâce", date: "426–427", books: 1, category: "anti-pelagian", pl: "44", ba: "24", wsa: "I/26" },
+  { id: "bapt", abbrev: "bapt.", latin: "De baptismo", english: "On Baptism", french: "Du baptême", date: "400–401", books: 7, category: "anti-donatist", csel: "51", pub: "Tempsky", year: "1908", editor: "M. Petschenig", pl: "43", ba: "29", wsa: "I/20" },
+  { id: "un_bapt", abbrev: "un. bapt.", latin: "De unico baptismo", english: "On the One Baptism", french: "Du baptême unique", date: "410–411", books: 1, category: "anti-donatist", csel: "53", pl: "43", wsa: "I/20" },
+  { id: "lib_arb", abbrev: "lib. arb.", latin: "De libero arbitrio", english: "On Free Choice of the Will", french: "Du libre arbitre", date: "387–395", books: 3, category: "anti-manichean", cchrsl: "29", pub: "Brepols", year: "1970", editor: "W. M. Green", pl: "32", ba: "6", wsa: "I/2" },
+  { id: "mor", abbrev: "mor.", latin: "De moribus ecclesiae catholicae et de moribus Manichaeorum", english: "On the Catholic and Manichean Ways of Life", french: "Des mœurs de l'Église catholique et des mœurs des Manichéens", date: "387–389", books: 2, category: "anti-manichean", pl: "32", ba: "1", wsa: "I/19" },
+  { id: "util_cred", abbrev: "util. cred.", latin: "De utilitate credendi", english: "On the Advantage of Believing", french: "De l'utilité de croire", date: "391–392", books: 1, category: "anti-manichean", csel: "25/1", pl: "42", ba: "8", wsa: "I/2" },
+  { id: "en_ps", abbrev: "en. Ps.", latin: "Enarrationes in Psalmos", english: "Expositions of the Psalms", french: "Les Commentaires sur les Psaumes", date: "392–422", books: 150, category: "exegetical", cchrsl: "38-40", pub: "Brepols", year: "1956", editor: "E. Dekkers & J. Fraipont", pl: "36-37", wsa: "III/15-20" },
+  { id: "jo_ev_tr", abbrev: "Jo. ev. tr.", latin: "In Johannis evangelium tractatus", english: "Tractates on the Gospel of John", french: "Traités sur l'Évangile de saint Jean", date: "406–421", books: 124, category: "exegetical", cchrsl: "36", pub: "Brepols", year: "1954", editor: "R. Willems", pl: "35", ba: "71-74", wsa: "III/12-14" },
+  { id: "ep_io_tr", abbrev: "ep. Jo. tr.", latin: "In epistulam Johannis ad Parthos tractatus", english: "Tractates on the First Letter of John", french: "Traités sur la première épître de saint Jean", date: "407", books: 10, category: "exegetical", pl: "35", ba: "76", wsa: "III/14" },
+  { id: "gn_adv_man", abbrev: "Gn. adv. Man.", latin: "De Genesi adversus Manichaeos", english: "On Genesis, against the Manichees", french: "De la Genèse contre les Manichéens", date: "388–389", books: 2, category: "exegetical", csel: "91", pl: "34", wsa: "I/13" },
+  { id: "cat_rud", abbrev: "cat. rud.", latin: "De catechizandis rudibus", english: "On Instructing Beginners", french: "De la catéchèse des débutants", date: "399–405", books: 1, category: "education", cchrsl: "46", pub: "Brepols", year: "1969", editor: "I. B. Bauer", pl: "40", ba: "11/1", wsa: "I/10" },
+  { id: "mag", abbrev: "mag.", latin: "De magistro", english: "On the Teacher", french: "Du maître", date: "389", books: 1, category: "education", cchrsl: "29", pub: "Brepols", year: "1970", editor: "K.-D. Daur", pl: "32", ba: "6", wsa: "I/2" },
+  { id: "mus", abbrev: "mus.", latin: "De musica", english: "On Music", french: "De la musique", date: "387–391", books: 6, category: "education", pl: "32", ba: "7" },
+  { id: "ord", abbrev: "ord.", latin: "De ordine", english: "On Order", french: "De l'ordre", date: "386", books: 2, category: "education", cchrsl: "29", pub: "Brepols", year: "1970", editor: "W. M. Green", pl: "32", ba: "4/2", wsa: "I/2" },
+  { id: "sol", abbrev: "sol.", latin: "Soliloquia", english: "The Soliloquies", french: "Les Soliloques", date: "386–387", books: 2, category: "education", csel: "89", pub: "Hoelder", year: "1986", editor: "W. Hörmann", pl: "32", ba: "5", wsa: "I/2" },
+  { id: "ench", abbrev: "ench.", latin: "Enchiridion ad Laurentium de fide spe et caritate", english: "Handbook on Faith, Hope, and Love", french: "Le Manuel", date: "421–422", books: 1, category: "moral", cchrsl: "46", pub: "Brepols", year: "1969", editor: "E. Evans", pl: "40", ba: "9", wsa: "I/8" },
+  { id: "mend", abbrev: "mend.", latin: "De mendacio", english: "On Lying", french: "Du mensonge", date: "395", books: 1, category: "moral", csel: "41", pub: "Tempsky", year: "1900", editor: "J. Zycha", pl: "40", ba: "2", wsa: "I/16" },
+  { id: "b_coniug", abbrev: "b. coniug.", latin: "De bono coniugali", english: "On the Good of Marriage", french: "Des biens du mariage", date: "401", books: 1, category: "moral", csel: "41", pl: "40", ba: "2", wsa: "I/9" },
+  { id: "virg", abbrev: "virg.", latin: "De sancta virginitate", english: "On Holy Virginity", french: "De la sainte virginité", date: "401", books: 1, category: "moral", csel: "41", pl: "40", ba: "3", wsa: "I/9" },
+  { id: "pat", abbrev: "pat.", latin: "De patientia", english: "On Patience", french: "De la patience", date: "417–418", books: 1, category: "moral", csel: "41", pl: "40", wsa: "I/16" },
+  { id: "s", abbrev: "s.", latin: "Sermones", english: "Sermons", french: "Sermons", date: "391–430", books: 0, category: "sermons", cchrsl: "41", pl: "38-39", wsa: "III/1-11" },
+  { id: "ep", abbrev: "ep.", latin: "Epistulae", english: "Letters", french: "Lettres", date: "386–430", books: 0, category: "letters", csel: "34, 44, 57, 58, 88", pl: "33", ba: "46", wsa: "II/1-4" },
+  { id: "acad", abbrev: "Acad.", latin: "Contra Academicos", english: "Against the Academicians", french: "Contre les Académiciens", date: "386", books: 3, category: "philosophical", cchrsl: "29", pub: "Brepols", year: "1970", editor: "W. M. Green", pl: "32", ba: "4/1", wsa: "I/2" },
+  { id: "beat_u", abbrev: "beat. u.", latin: "De beata vita", english: "The Happy Life", french: "La Vie heureuse", date: "386", books: 1, category: "philosophical", cchrsl: "29", pub: "Brepols", year: "1970", editor: "W. M. Green", pl: "32", ba: "4/1", wsa: "I/2" },
+  { id: "imm_an", abbrev: "imm. an.", latin: "De immortalitate animae", english: "On the Immortality of the Soul", french: "De l'immortalité de l'âme", date: "387", books: 1, category: "philosophical", pl: "32", ba: "5", wsa: "I/2" },
+  { id: "quant", abbrev: "quant.", latin: "De animae quantitate", english: "On the Greatness of the Soul", french: "De la grandeur de l'âme", date: "387–388", books: 1, category: "philosophical", csel: "89", pl: "32", ba: "5", wsa: "I/2" },
+  { id: "vera_rel", abbrev: "vera rel.", latin: "De vera religione", english: "On True Religion", french: "De la vraie religion", date: "390–391", books: 1, category: "philosophical", cchrsl: "32", pub: "Brepols", year: "1962", editor: "K.-D. Daur", pl: "34", ba: "8", wsa: "I/2" },
+  { id: "retr", abbrev: "retr.", latin: "Retractationes", english: "Reconsiderations", french: "Les Rétractations", date: "426–427", books: 2, category: "major", cchrsl: "57", pub: "Brepols", year: "1984", editor: "A. Mutzenbecher", csel: "36", pl: "32", ba: "12", wsa: "I/2" },
+  { id: "reg", abbrev: "reg.", latin: "Regula", english: "The Rule", french: "La Règle", date: "c. 397", books: 1, category: "moral", pl: "32", wsa: "I/10" },
+  { id: "op_mon", abbrev: "op. mon.", latin: "De opere monachorum", english: "On the Work of Monks", french: "Du travail des moines", date: "401", books: 1, category: "moral", csel: "41", pl: "40", wsa: "I/16" },
+  { id: "c_max", abbrev: "c. Max.", latin: "Contra Maximinum Arianorum episcopum", english: "Against Maximinus, Arian Bishop", french: "Contre Maximin", date: "428", books: 2, category: "philosophical", pl: "42", wsa: "I/18" },
+  { id: "diu_qu", abbrev: "div. qu.", latin: "De diversis quaestionibus LXXXIII", english: "Eighty-three Different Questions", french: "Quatre-vingt-trois questions", date: "388–396", books: 1, category: "philosophical", cchrsl: "44A", pub: "Brepols", year: "1975", editor: "A. Mutzenbecher", pl: "40", ba: "10", wsa: "I/12" },
+  { id: "qu", abbrev: "qu.", latin: "Quaestiones in Heptateuchum", english: "Questions on the Heptateuch", french: "Questions sur l'Heptateuque", date: "419", books: 7, category: "exegetical", cchrsl: "33", pub: "Brepols", year: "1958", editor: "J. Fraipont", csel: "28/2", pl: "34" },
+  { id: "c_iul", abbrev: "c. Jul.", latin: "Contra Julianum", english: "Against Julian", french: "Contre Julien", date: "421–422", books: 6, category: "anti-pelagian", pl: "44", wsa: "I/24" },
+  { id: "c_iul_imp", abbrev: "c. Jul. imp.", latin: "Contra Julianum opus imperfectum", english: "Unfinished Work Against Julian", french: "Ouvrage inachevé contre Julien", date: "428–430", books: 6, category: "anti-pelagian", csel: "85/1-2", pub: "Hoelder", year: "1974", editor: "M. Zelzer", pl: "45", wsa: "I/25" },
+  { id: "gest_pel", abbrev: "gest. Pel.", latin: "De gestis Pelagii", english: "On the Proceedings of Pelagius", french: "Des actes de Pélage", date: "417", books: 1, category: "anti-pelagian", csel: "42", pl: "44", ba: "21", wsa: "I/23" },
+  { id: "nupt_et_conc", abbrev: "nupt. et conc.", latin: "De nuptiis et concupiscentia", english: "On Marriage and Desire", french: "Des noces et de la concupiscence", date: "419–420", books: 2, category: "anti-pelagian", csel: "42", pl: "44", ba: "23", wsa: "I/24" },
+  { id: "perf_just", abbrev: "perf. just.", latin: "De perfectione justitiae hominis", english: "On the Perfection of Human Righteousness", french: "De la perfection de la justice de l'homme", date: "415", books: 1, category: "anti-pelagian", csel: "42", pl: "44", ba: "21", wsa: "I/23" },
+  { id: "cur_mort", abbrev: "cur. mort.", latin: "De cura pro mortuis gerenda", english: "On Care for the Dead", french: "Du soin à prendre des morts", date: "421–422", books: 1, category: "moral", csel: "41", pl: "40", wsa: "I/16" },
+  { id: "diu_daem", abbrev: "div. daem.", latin: "De divinatione daemonum", english: "On the Divination of Demons", french: "De la divination des démons", date: "406–411", books: 1, category: "philosophical", csel: "41", pl: "40", wsa: "I/16" },
+  { id: "an_et_or", abbrev: "an. et or.", latin: "De anima et eius origine", english: "On the Soul and its Origin", french: "De l'âme et de son origine", date: "419–420", books: 4, category: "philosophical", csel: "60", pl: "44", wsa: "I/23" },
+  { id: "c_faust", abbrev: "c. Faust.", latin: "Contra Faustum Manichaeum", english: "Against Faustus, a Manichean", french: "Contre Fauste le Manichéen", date: "397–399", books: 33, category: "anti-manichean", csel: "25/1", pl: "42", wsa: "I/20" },
+  { id: "c_adim", abbrev: "c. Adim.", latin: "Contra Adimantum", english: "Against Adimantus", french: "Contre Adimante", date: "393–394", books: 1, category: "anti-manichean", csel: "25/1", pl: "42", wsa: "I/19" },
+  { id: "f_invis", abbrev: "f. invis.", latin: "De fide rerum invisibilium", english: "On Faith in the Unseen", french: "De la foi aux choses invisibles", date: "399–400", books: 1, category: "moral", cchrsl: "46", pub: "Brepols", year: "1969", editor: "M. van den Hout", pl: "40", ba: "8", wsa: "I/2" },
+  { id: "c_litt_pet", abbrev: "c. litt. Pet.", latin: "Contra litteras Petiliani", english: "Against the Letters of Petilian", french: "Contre les lettres de Pétilien", date: "400–403", books: 3, category: "anti-donatist", csel: "52", pub: "Tempsky", year: "1909", editor: "M. Petschenig", pl: "43", ba: "30", wsa: "I/20" },
+  { id: "ex_gal", abbrev: "ex. Gal.", latin: "Expositio Epistulae ad Galatas", english: "Commentary on the Letter to the Galatians", french: "Commentaire de l'Épître aux Galates", date: "394", books: 1, category: "exegetical", pl: "35", wsa: "I/21" },
+  { id: "ex_prop_rm", abbrev: "ex. prop. Rm.", latin: "Expositio quarundam propositionum ex epistula Apostoli ad Romanos", english: "Commentary on Statements in the Letter to the Romans", french: "Explication de quelques propositions de l'Épître aux Romains", date: "394", books: 1, category: "exegetical", pl: "35" },
+  { id: "f_et_symb", abbrev: "f. et symb.", latin: "De fide et symbolo", english: "On Faith and the Creed", french: "De la foi et du symbole", date: "393", books: 1, category: "education", csel: "41", pl: "40", ba: "9" },
+  { id: "gn_litt_imp", abbrev: "Gn. litt. imp.", latin: "De Genesi ad litteram imperfectus liber", english: "On the Literal Interpretation of Genesis, an Unfinished Book", french: "La Genèse au sens littéral, livre inachevé", date: "393", books: 1, category: "exegetical", csel: "28/1", pl: "34" },
+  { id: "gr_et_pecc_or", abbrev: "gr. et pecc. or.", latin: "De gratia Christi et de peccato originali", english: "On the Grace of Christ and Original Sin", french: "De la grâce du Christ et du péché originel", date: "418", books: 2, category: "anti-pelagian", csel: "42", pl: "44", ba: "22" },
+  { id: "haer", abbrev: "haer.", latin: "De haeresibus", english: "On Heresies", french: "Des hérésies", date: "428–429", books: 1, category: "major", cchrsl: "46", pl: "42" },
+  { id: "nat_b", abbrev: "nat. b.", latin: "De natura boni", english: "On the Nature of the Good", french: "De la nature du bien", date: "399", books: 1, category: "anti-manichean", csel: "25/2", pl: "42", ba: "1" },
+  { id: "qu_ev", abbrev: "qu. Ev.", latin: "Quaestiones Evangeliorum", english: "Questions on the Gospels", french: "Questions sur les Évangiles", date: "400", books: 2, category: "exegetical", cchrsl: "44B", pl: "35" },
+  { id: "qu_vet_t", abbrev: "qu. vet. T.", latin: "De octo quaestionibus ex Veteri Testamento", english: "On Eight Questions from the Old Testament", french: "Huit questions sur l'Ancien Testament", date: "411", books: 1, category: "exegetical", cchrsl: "33", pl: "34" },
+  { id: "rhet", abbrev: "rhet.", latin: "De rhetorica", english: "On Rhetoric", french: "De la rhétorique", date: "", books: 1, category: "education", pl: "32" },
+  { id: "s_dom_mon", abbrev: "s. Dom. mon.", latin: "De sermone Domini in monte", english: "On the Lord’s Sermon on the Mount", french: "L'Explication du sermon sur la montagne", date: "393–394", books: 2, category: "exegetical", cchrsl: "35", pl: "34", wsa: "I/15" },
+  { id: "simpl", abbrev: "Simpl.", latin: "Ad Simplicianum", english: "To Simplicianus", french: "À Simplicien", date: "397", books: 2, category: "major", cchrsl: "44", pl: "40", ba: "10" },
+  { id: "spec", abbrev: "spec.", latin: "Speculum", english: "The Mirror", french: "Le Miroir", date: "427", books: 1, category: "moral", csel: "12", pl: "34" }
+];
+
+const CATEGORIES = [
+  { id: "all", label: { FR: "Toutes", EN: "All", NL: "Alle" } },
+  { id: "major", label: { FR: "Œuvres Majeures", EN: "Major", NL: "Grote Werken" } },
+  { id: "education", label: { FR: "Éducation", EN: "Education", NL: "Onderwijs" } },
+  { id: "exegetical", label: { FR: "Exégèse", EN: "Exegetical", NL: "Exegese" } },
+  { id: "anti-pelagian", label: { FR: "Anti-Pélagien", EN: "Anti-Pelagian", NL: "Anti-Pelagiaans" } },
+  { id: "anti-donatist", label: { FR: "Anti-Donatiste", EN: "Anti-Donatist", NL: "Anti-Donatistisch" } },
+  { id: "anti-manichean", label: { FR: "Anti-Manichéen", EN: "Anti-Manichean", NL: "Anti-Manichees" } },
+  { id: "philosophical", label: { FR: "Philosophie", EN: "Philosophical", NL: "Filosofisch" } },
+  { id: "moral", label: { FR: "Morale", EN: "Moral", NL: "Moreel" } },
+  { id: "sermons", label: { FR: "Sermons", EN: "Sermons", NL: "Preken" } },
+  { id: "letters", label: { FR: "Lettres", EN: "Letters", NL: "Brieven" } }
+];
+
+let selectedWork = null;
+let activeCategory = "all";
+let citationHistory = [];
+
+try {
+  const saved = localStorage.getItem('augustine-history-kul');
+  if (saved) citationHistory = JSON.parse(saved);
+} catch(e) {}
+
+// Conversion Chiffres Romains
+function toRoman(num) {
+  const val = parseInt(num);
+  if (isNaN(val) || val <= 0) return num;
+  const lookup = [[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];
+  let roman = ''; let n = val;
+  for (const [v, s] of lookup) { while (n >= v) { roman += s; n -= v; } }
+  return roman;
+}
+
+function capitalizeFirst(str) {
+  if(!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// ═══════════════════════════════════════════════
+// GESTION DE L'INTERFACE DYNAMIQUE
+// ═══════════════════════════════════════════════
+
+function renderFilters() {
+  const docLang = document.getElementById('docLang').value;
+  const container = document.getElementById('categoryFilters');
+  container.innerHTML = CATEGORIES.map(c =>
+    `<button class="filter-chip ${activeCategory === c.id ? 'active' : ''}" data-cat="${c.id}">${c.label[docLang]}</button>`
+  ).join('');
+
+  container.querySelectorAll('.filter-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCategory = btn.dataset.cat;
+      renderFilters();
+      renderWorks();
+    });
+  });
+}
+
+function renderWorks() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const docLang = document.getElementById('docLang').value;
+  const container = document.getElementById('worksList');
+  
+  let filtered = WORKS;
+  if (activeCategory !== 'all') {
+    filtered = filtered.filter(w => w.category === activeCategory);
+  }
+
+  filtered = filtered.filter(w => 
+    w.latin.toLowerCase().includes(query) || 
+    w.abbrev.toLowerCase().includes(query) ||
+    (w.french && w.french.toLowerCase().includes(query)) ||
+    (w.english && w.english.toLowerCase().includes(query))
+  );
+
+  let countText = `${filtered.length} works`;
+  if(docLang === "FR") countText = `${filtered.length} œuvres`;
+  if(docLang === "NL") countText = `${filtered.length} werken`;
+  document.getElementById('resultsCount').textContent = countText;
+  
+  container.innerHTML = filtered.map(w => {
+    let mainTitle = w.latin;
+    if(docLang === 'FR' && w.french) mainTitle = w.french;
+    if(docLang === 'EN' && w.english) mainTitle = w.english;
+    
+    let meta = `<span class="abbrev">${w.abbrev}</span>`;
+    if(w.date) meta += `<span>${w.date}</span>`;
+    if(w.books > 0) meta += `<span>${w.books} liv.</span>`;
+
+    return `
+    <div class="work-card ${selectedWork && selectedWork.id === w.id ? 'selected' : ''}" data-id="${w.id}">
+      <div class="work-title">${mainTitle}</div>
+      <div class="work-latin">${w.latin}</div>
+      <div class="work-meta">${meta}</div>
+    </div>
+  `}).join('');
+  
+  container.querySelectorAll('.work-card').forEach(card => {
+    card.addEventListener('click', () => {
+      selectedWork = WORKS.find(w => w.id === card.dataset.id);
+      
+      const hasBeenCited = citationHistory.some(h => h.workId === selectedWork.id);
+      if(hasBeenCited) {
+        document.querySelector('input[name="citeType"][value="short"]').checked = true;
+        document.getElementById('autoBadge').classList.remove('hidden');
+      } else {
+        document.querySelector('input[name="citeType"][value="full"]').checked = true;
+        document.getElementById('autoBadge').classList.add('hidden');
+      }
+
+      document.getElementById('citationBuilder').classList.remove('hidden');
+      
+      let builderTitle = selectedWork.latin;
+      if(docLang === 'FR' && selectedWork.french) builderTitle = selectedWork.french;
+      if(docLang === 'EN' && selectedWork.english) builderTitle = selectedWork.english;
+      document.getElementById('builderTitle').textContent = builderTitle;
+      
+      updatePreview();
+      renderWorks();
+      setTimeout(() => document.getElementById('citationBuilder').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    });
+  });
+}
+
+function renderHistory() {
+  const docLang = document.getElementById('docLang').value;
+  const container = document.getElementById('historyList');
+  if (citationHistory.length === 0) {
+    let emptyMsg = "No recent citations.";
+    if(docLang === "FR") emptyMsg = "Aucune citation récente.";
+    if(docLang === "NL") emptyMsg = "Geen recente citaten.";
+    container.innerHTML = `<p style="text-align:center; color: var(--ink-faded); margin-top:20px;">${emptyMsg}</p>`;
+    return;
+  }
+
+  container.innerHTML = citationHistory.map((h, i) => {
+    const d = new Date(h.time);
+    return `
+    <div class="history-item" data-index="${i}">
+      <div class="history-ref">${h.citation || 'Ref'}</div>
+      <div style="font-size: 10px; color: var(--ink-faded); margin-top: 2px;">${d.toLocaleTimeString()}</div>
+    </div>
+  `}).join('');
+}
+
+// ═══════════════════════════════════════════════
+// GÉNÉRATION DE LA CITATION
+// ═══════════════════════════════════════════════
+function formatCitation() {
+  if (!selectedWork) return '';
+
+  const w = selectedWork;
+  const citeType = document.querySelector('input[name="citeType"]:checked').value;
+  const docLang = document.getElementById('docLang').value;
+  const style = document.getElementById('citeStyle').value;
+  const includeCity = document.getElementById('optIncludeCity').checked;
+  
+  const book = document.getElementById('citeBook').value.trim();
+  const chapter = document.getElementById('citeChapter').value.trim();
+  const para = document.getElementById('citeParagraph').value.trim();
+  const page = document.getElementById('citePage').value.trim();
+  const volOverride = document.getElementById('citeVol').value.trim();
+  
+  const textLatin = document.getElementById('citeLatin').value.trim();
+  const textTrans = document.getElementById('citeTrans').value.trim();
+  const translator = document.getElementById('citeTranslator').value.trim();
+  const isOwnTranslation = document.getElementById('ownTranslation').checked;
+
+  let author = "Augustinus"; // Fixe selon KUL
+  let loc = '';
+  if (book) loc += toRoman(book);
+  if (chapter) loc += (loc ? ', ' : '') + chapter;
+  if (para) loc += (loc ? ', ' : '') + para;
+
+  let reference = '';
+
+  if (citeType === 'full') {
+    let title = `<i>${w.latin}</i>`;
+    let seriesInfo = "";
+    let pubInfo = "";
+
+    switch (style) {
+      case 'cchrsl':
+      case 'ccsl':
+        let vol = volOverride || w.cchrsl || '';
+        let prefix = style === 'cchrsl' ? 'Corpus Christianorum: Series Latina' : 'Corpus Christianorum, Series Latina';
+        if (vol) seriesInfo = `${prefix} ${vol}`;
+        let pubStr = "";
+        if (includeCity && w.city) pubStr += w.city + ": ";
+        if (w.pub) pubStr += w.pub;
+        if (w.year) pubStr += (pubStr ? ", " : "") + w.year;
+        if (pubStr) pubInfo = `(${pubStr})`;
+        break;
+      case 'csel':
+        let cselVol = volOverride || w.csel || '';
+        if (cselVol) seriesInfo = `Corpus Scriptorum Ecclesiasticorum Latinorum ${cselVol}`;
+        let cselPubStr = "";
+        if (includeCity && w.cselCity) cselPubStr += w.cselCity + ": ";
+        if (w.cselPub) cselPubStr += w.cselPub;
+        if (w.cselYear) cselPubStr += (cselPubStr ? ", " : "") + w.cselYear;
+        if (cselPubStr) pubInfo = `(${cselPubStr})`;
+        break;
+      case 'ba':
+        let baVol = volOverride || w.ba || '';
+        if (baVol) seriesInfo = `Bibliothèque Augustinienne ${baVol}`;
+        break;
+      case 'pl':
+        let plVol = volOverride || w.pl || '';
+        if (plVol) seriesInfo = `Patrologia Latina ${plVol}`;
+        break;
+      case 'wsa':
+        let wsaVol = volOverride || w.wsa || '';
+        if (wsaVol) seriesInfo = `Works of Saint Augustine ${wsaVol}`;
+        break;
+    }
+
+    reference = `${author}, ${title}`;
+    if (loc) reference += ` ${loc}`;
+    if (w.editor) reference += `, ed. ${w.editor}`;
+    if (seriesInfo) reference += `, ${seriesInfo}`;
+    if (pubInfo) reference += ` ${pubInfo}`;
+    if (page) reference += `, ${page}`;
+  } else {
+    let abbrev = capitalizeFirst(w.abbrev);
+    reference = `${author}, <i>${abbrev}</i>`;
+    if (loc) reference += ` ${loc}`;
+    if (page) reference += `, ${page}`;
+  }
+
+  let finalHtml = "";
+  let myTransStr = "[my translation]";
+  if(docLang === "FR") myTransStr = "[traduction personnelle]";
+  if(docLang === "NL") myTransStr = "[eigen vertaling]";
+  
+  let transMention = isOwnTranslation ? myTransStr : `trans. ${translator || 'N.'}`;
+
+  if (textTrans && textLatin) {
+    finalHtml = `"${textTrans}" ("${textLatin}", ${transMention}), ${reference}`;
+  } else if (textTrans) {
+    finalHtml = `"${textTrans}" (${transMention}), ${reference}`;
+  } else if (textLatin) {
+    finalHtml = `"${textLatin}", ${reference}`;
+  } else {
+    finalHtml = reference;
+  }
+
+  if (!finalHtml.endsWith('.') && !finalHtml.endsWith(')') && !finalHtml.endsWith(']')) {
+    finalHtml += '.';
+  }
+
+  return finalHtml;
+}
+
+function updatePreview() {
+  const citationHtml = formatCitation();
+  const preview = document.getElementById('citationPreview');
+  preview.innerHTML = citationHtml || 'Remplissez les détails...';
+  document.getElementById('insertBtn').disabled = !citationHtml;
+}
+
+// ═══════════════════════════════════════════════
+// INITIALISATION
+// ═══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  renderFilters();
+  renderWorks();
+  renderHistory();
+  
+  const lang = document.getElementById('docLang').value;
+  if(lang === "FR") document.getElementById('ownTransLabel').innerText = "Ceci est ma propre traduction ([traduction personnelle])";
+
+  // Gestion des Onglets
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+      if (tab.dataset.tab === 'history') renderHistory();
+    });
+  });
+
+  // Checkbox traducteur
+  document.getElementById('ownTranslation').addEventListener('change', function() {
+    if(this.checked) {
+      document.getElementById('citeTranslator').value = "";
+      document.getElementById('translatorDiv').style.display = 'none';
+    } else {
+      document.getElementById('translatorDiv').style.display = 'block';
+    }
+    updatePreview();
+  });
+
+  // Changement de langue dynamique
+  document.getElementById('docLang').addEventListener('change', function() {
+    const lang = this.value;
+    let label = "Ceci est ma propre traduction ([my translation])";
+    if(lang === "FR") label = "Ceci est ma propre traduction ([traduction personnelle])";
+    if(lang === "NL") label = "Ceci est ma propre traduction ([eigen vertaling])";
+    document.getElementById('ownTransLabel').innerText = label;
+    
+    renderFilters();
+    renderWorks(); 
+    updatePreview();
+  });
+
+  document.getElementById('searchInput').addEventListener('input', renderWorks);
+  
+  const inputs = ['citeStyle', 'citeBook', 'citeChapter', 'citeParagraph', 'citePage', 'citeVol', 'citeLatin', 'citeTrans', 'citeTranslator', 'optIncludeCity'];
+  inputs.forEach(id => {
+    document.getElementById(id).addEventListener('input', updatePreview);
+    document.getElementById(id).addEventListener('change', updatePreview);
+  });
+
+  document.querySelectorAll('input[name="citeType"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      document.getElementById('autoBadge').classList.add('hidden');
+      updatePreview();
+    });
+  });
+
+  // Insertion Word
+  document.getElementById('insertBtn').addEventListener('click', async () => {
+    const citationHtml = formatCitation();
+    if (!citationHtml) return;
+
+    citationHistory.unshift({ workId: selectedWork.id, time: new Date().getTime(), citation: citationHtml });
+    if(citationHistory.length > 50) citationHistory.pop();
+    try { localStorage.setItem('augustine-history-kul', JSON.stringify(citationHistory)); } catch(e) {}
+
+    if (!officeReady) {
+      const temp = document.createElement('div');
+      temp.innerHTML = citationHtml;
+      navigator.clipboard.writeText(temp.textContent || temp.innerText);
+      alert('Texte copié dans le presse-papier (Mode Navigateur) !');
+      return;
+    }
+
+    try {
+      await Word.run(async (context) => {
+        const range = context.document.getSelection();
+        const footnote = range.insertFootnote("");
+        footnote.body.insertHtml(citationHtml, Word.InsertLocation.end);
+        await context.sync();
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  });
+});
+</script>
+</body>
+</html>
