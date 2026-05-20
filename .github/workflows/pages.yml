@@ -1,0 +1,82 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build distribution
+        run: |
+          set -euo pipefail
+          mkdir -p _site _site/assets
+          cp taskpane.html _site/
+          cp passages.public.json _site/
+          cp -r assets/. _site/assets/
+          # The repository owner and name come from the GitHub context; derive
+          # the Pages host (USER.github.io/REPO) and substitute it into the
+          # manifest placeholder so it points at the deployed taskpane.
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          DOMAIN="${OWNER,,}.github.io/${REPO_NAME,,}"
+          echo "Deploying for domain: https://${DOMAIN}"
+          sed "s|YOUR-DOMAIN.example|${DOMAIN}|g" manifest.xml > _site/manifest.xml
+          # Landing page with a download link for the manifest
+          cat > _site/index.html <<HTML
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <title>Augustinus Citator</title>
+            <style>
+              body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 20px; line-height: 1.55; color: #2c1810; }
+              code { background: #f5f0e8; padding: 2px 6px; border-radius: 3px; }
+              a.btn { display: inline-block; padding: 10px 18px; background: #b8422c; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; }
+              a.btn:hover { background: #a03822; }
+            </style>
+          </head>
+          <body>
+            <h1>Augustinus Citator</h1>
+            <p>Word add-in to insert formatted citations from the works of Augustine of Hippo.</p>
+            <p><a class="btn" href="manifest.xml" download>Download manifest.xml</a></p>
+            <h3>How to install in Word</h3>
+            <ol>
+              <li>Download <code>manifest.xml</code> with the button above.</li>
+              <li>Open Word. Go to <strong>Insert → Add-ins → My Add-ins → Upload My Add-in</strong>.</li>
+              <li>Select the downloaded <code>manifest.xml</code>.</li>
+              <li>Click <strong>"Cite Augustine"</strong> in the Home ribbon.</li>
+            </ol>
+            <p>Source: <a href="https://github.com/${GITHUB_REPOSITORY}">github.com/${GITHUB_REPOSITORY}</a></p>
+          </body>
+          </html>
+          HTML
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

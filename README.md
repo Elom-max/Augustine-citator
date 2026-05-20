@@ -6,12 +6,14 @@ Cet add-in Word permet de **citer directement les œuvres d'Augustin** et de les
 
 ### Fonctionnalités
 
-- **Base de données de 55+ œuvres** d'Augustin classées par catégorie
-- **Recherche instantanée** par titre latin, anglais ou abréviation standard
-- **5 styles de citation** : CCSL/CSEL, PL (Migne), BA, WSA, abrégé
-- **Insertion directe** en note de bas de page, note de fin, ou parenthèse
-- **Formatage configurable** : chiffres romains, titres latins/anglais, dates
-- **Historique** des citations récentes (réutilisation en un clic)
+- **Base de données de 67 œuvres** d'Augustin classées par catégorie
+- **Recherche instantanée** par titre latin, français, anglais ou abréviation standard
+- **6 styles de citation** : CChr SL (KU Leuven), CCSL, CSEL, BA, PL (Migne), WSA — chacun conforme à sa convention propre
+- **Insertion directe** en note de bas de page, note de fin, ou inline
+- **Formatage configurable** : chiffres romains, titres FR/EN/latin, date de composition
+- **Banque de passages** publique (Migne PD + traductions XIXᵉ) + banque locale privée que vous alimentez **depuis CAG** via le bouton « Importer CAG » (parser de référence intégré)
+- **Historique** des citations récentes (réinsertion en un clic)
+- **UI multilingue** : FR / EN / NL
 - **Copier-coller** en fallback si Word n'est pas connecté
 
 ---
@@ -127,7 +129,52 @@ augustine-word-addin/
 └── cert.pem             ← (généré) Certificat SSL
 ```
 
-## Déploiement public
+## Banque de passages
+
+Deux fichiers cohabitent :
+
+- **`passages.public.json`** — versionné dans le dépôt. Contient des
+  passages canoniques tirés de **Patrologia Latina** (Migne, domaine
+  public) avec leurs traductions XIXᵉ siècle (Péronne, Pusey, Dods —
+  toutes libres de droits). Distribuable sans souci.
+- **`passages.local.json`** (et la copie en `localStorage` / Office
+  RoamingSettings) — **non versionné** (gitignored). Alimenté par
+  vous-même via le bouton **« Importer CAG »** depuis l'add-in :
+  vous copiez un passage depuis votre accès personnel CAG (Corpus
+  Augustinianum Gissense, Brepols), vous le collez dans la modal, le
+  parser détecte œuvre/livre/chapitre/paragraphe, vous validez, c'est
+  enregistré. Ces passages restent locaux et ne sont jamais redistribués
+  — ce qui respecte les CGU de Brepols (usage personnel uniquement).
+
+L'add-in ne peut **pas** lire CAG en autonomie : la sandbox WebView de
+Word interdit les requêtes cross-origin vers Brepols, et les CGU
+prohibent le scraping automatisé. Le flux manuel « copier-coller +
+parser » est l'approche conforme.
+
+## Distribution
+
+Trois voies au choix :
+
+### 1. Sideload manuel via GitHub Pages
+Le workflow `.github/workflows/pages.yml` déploie automatiquement
+`taskpane.html`, `assets/`, `passages.public.json` et un `manifest.xml`
+auto-substitué vers `https://<owner>.github.io/<repo>/` à chaque push
+sur `main`. L'utilisateur télécharge le `manifest.xml` depuis la page
+d'accueil et le sideload dans Word (Insert → Mes compléments → Télécharger).
+
+### 2. Installeur Windows (.exe) via Inno Setup
+Voir `installer/README.md`. Génère un `.exe` qui enregistre l'add-in
+comme catalogue de confiance Word (clé registre HKCU) — l'utilisateur
+double-clique l'installeur, ouvre Word, l'add-in apparaît dans
+**Insert → Add-ins → My Add-ins → Shared Folder**. Aucun sideload
+manuel requis. macOS : un one-liner shell équivalent est documenté.
+
+### 3. AppSource Microsoft (distribution publique mondiale)
+Soumission classique sur <https://partner.microsoft.com/dashboard/office>.
+Une fois validé (1-2 semaines), l'add-in apparaît dans la boutique Word
+de tous les utilisateurs Microsoft 365.
+
+## Déploiement public (manuel, sans CI)
 
 Pour partager l'add-in avec d'autres utilisateurs, vous devez héberger `taskpane.html` et le dossier `assets/` sur un domaine HTTPS public :
 

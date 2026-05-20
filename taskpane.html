@@ -137,6 +137,28 @@
     .toast.success { background: #2d7a4a; }
     .toast.error { background: var(--vermillion); }
     .toast.info { background: var(--ink-light); }
+
+    /* ── Modal (import CAG) ── */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; z-index: 1000; align-items: center; justify-content: center; padding: 12px; }
+    .modal-backdrop.show { display: flex; }
+    .modal { background: var(--parchment); border-radius: var(--radius); padding: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    .modal h3 { font-family: 'Crimson Pro', serif; font-size: 16px; margin-bottom: 6px; color: var(--ink); }
+    .modal .hint { font-size: 11px; color: var(--ink-faded); margin-bottom: 8px; line-height: 1.4; }
+    .modal textarea { width: 100%; min-height: 140px; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-family: 'Crimson Pro', serif; font-size: 12px; resize: vertical; }
+    .modal .parsed { background: #fff; border: 1px dashed var(--vermillion-light); border-radius: 4px; padding: 8px 10px; margin-top: 10px; font-size: 12px; line-height: 1.5; }
+    .modal .parsed b { color: var(--vermillion); }
+    .modal-buttons { display: flex; gap: 6px; margin-top: 12px; justify-content: flex-end; }
+    .modal-buttons button { padding: 7px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: 12px; font-weight: 500; color: var(--ink); }
+    .modal-buttons button.primary { background: var(--vermillion); color: #fff; border-color: var(--vermillion); }
+    .modal-buttons button.primary:disabled { background: var(--border); border-color: var(--border); cursor: not-allowed; }
+    .modal-buttons button:hover:not(:disabled) { border-color: var(--vermillion-light); }
+    .modal-buttons button.primary:hover:not(:disabled) { background: #a03822; }
+
+    /* ── Passage selector ── */
+    .passage-row { display: flex; gap: 6px; align-items: end; }
+    .passage-row select { flex: 1; }
+    .btn-secondary { padding: 7px 10px; border: 1px solid var(--vermillion-light); background: #fff; color: var(--vermillion); border-radius: 4px; font-size: 11px; cursor: pointer; white-space: nowrap; font-weight: 500; }
+    .btn-secondary:hover { background: var(--vermillion); color: #fff; }
   </style>
 </head>
 <body>
@@ -172,6 +194,14 @@
         <div class="radio-group" id="citeTypeGroup">
           <label><input type="radio" name="citeType" value="full"/> <span data-i18n="firstNote">1ère note (Complète)</span></label>
           <label><input type="radio" name="citeType" value="short"/> <span data-i18n="shortNote">Note abrégée</span> <span id="autoBadge" class="auto-badge hidden" data-i18n="autoBadge">Auto</span></label>
+        </div>
+
+        <div class="form-group" id="passageSelectorDiv">
+          <label data-i18n="lblPassage">Passage de référence</label>
+          <div class="passage-row">
+            <select id="citePassage"><option value="">— —</option></select>
+            <button type="button" class="btn-secondary" id="importCagBtn" data-i18n="importCagBtn" title="Importer depuis CAG">Importer CAG</button>
+          </div>
         </div>
 
         <div class="form-row">
@@ -261,6 +291,20 @@
       </div>
     </div>
 
+  </div>
+
+  <div id="importModal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3 data-i18n="importTitle">Importer un passage depuis CAG</h3>
+      <p class="hint" data-i18n="importHint">Dans CAG, sélectionnez le passage et copiez-le (Ctrl+C). Collez ci-dessous. L'add-in détectera automatiquement l'œuvre, le livre, le chapitre et le paragraphe.</p>
+      <textarea id="importText" data-i18n-ph="importPh" placeholder="Augustinus, Confessiones, lib. 10 cap. 27 par. 38&#10;Sero te amavi, pulchritudo tam antiqua…"></textarea>
+      <div id="importParsed" class="parsed" style="display:none;"></div>
+      <div class="modal-buttons">
+        <button type="button" id="importCancel" data-i18n="cancel">Annuler</button>
+        <button type="button" id="importParse" data-i18n="parse">Analyser</button>
+        <button type="button" class="primary" id="importSave" disabled data-i18n="saveImport">Enregistrer</button>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -385,6 +429,18 @@ const I18N = {
     settingsRoman: 'Chiffres romains pour les livres',
     settingsDate: 'Inclure la date de composition',
     btnInsert: 'Insérer',
+    lblPassage: 'Passage de référence',
+    importCagBtn: 'Importer CAG',
+    importTitle: 'Importer un passage depuis CAG',
+    importHint: "Dans CAG, sélectionnez le passage et copiez-le (Ctrl+C), puis collez ci-dessous. L'add-in détectera automatiquement l'œuvre, le livre, le chapitre et le paragraphe. Restez dans les limites des CGU Brepols (usage personnel).",
+    importPh: 'Augustinus, Confessiones, lib. 10 cap. 27 par. 38\nSero te amavi, pulchritudo tam antiqua…',
+    cancel: 'Annuler', parse: 'Analyser', saveImport: 'Enregistrer',
+    importParsedHeader: 'Détecté :',
+    importNoMatch: "Impossible de détecter une référence. Vérifiez le format ou complétez à la main.",
+    importSaved: 'Passage ajouté à votre banque locale.',
+    noPassage: '— Aucun (saisie manuelle) —',
+    customPassages: '— Mes passages —',
+    publicPassages: '— Passages publics —',
   },
   EN: {
     author: 'Augustine', myTrans: 'my translation', ownLabel: 'This is my own translation',
@@ -411,6 +467,18 @@ const I18N = {
     settingsRoman: 'Roman numerals for books',
     settingsDate: 'Include composition date',
     btnInsert: 'Insert',
+    lblPassage: 'Reference passage',
+    importCagBtn: 'Import CAG',
+    importTitle: 'Import a passage from CAG',
+    importHint: "In CAG, select the passage and copy it (Ctrl+C), then paste below. The add-in will automatically detect the work, book, chapter and paragraph. Please stay within Brepols' Terms of Use (personal use only).",
+    importPh: 'Augustinus, Confessiones, lib. 10 cap. 27 par. 38\nSero te amavi, pulchritudo tam antiqua…',
+    cancel: 'Cancel', parse: 'Parse', saveImport: 'Save',
+    importParsedHeader: 'Detected:',
+    importNoMatch: 'Could not detect a reference. Check the format or fill manually.',
+    importSaved: 'Passage added to your local library.',
+    noPassage: '— None (manual entry) —',
+    customPassages: '— My passages —',
+    publicPassages: '— Public passages —',
   },
   NL: {
     author: 'Augustinus', myTrans: 'eigen vertaling', ownLabel: 'Dit is mijn eigen vertaling',
@@ -437,6 +505,18 @@ const I18N = {
     settingsRoman: 'Romeinse cijfers voor boeken',
     settingsDate: 'Compositiedatum opnemen',
     btnInsert: 'Invoegen',
+    lblPassage: 'Referentiepassage',
+    importCagBtn: 'CAG importeren',
+    importTitle: 'Een passage importeren uit CAG',
+    importHint: 'Selecteer in CAG de passage en kopieer (Ctrl+C), plak hieronder. De add-in detecteert automatisch werk, boek, hoofdstuk en paragraaf. Blijf binnen de Brepols-gebruiksvoorwaarden (persoonlijk gebruik).',
+    importPh: 'Augustinus, Confessiones, lib. 10 cap. 27 par. 38\nSero te amavi, pulchritudo tam antiqua…',
+    cancel: 'Annuleren', parse: 'Analyseren', saveImport: 'Opslaan',
+    importParsedHeader: 'Gedetecteerd:',
+    importNoMatch: 'Geen referentie gedetecteerd. Controleer het formaat of vul handmatig in.',
+    importSaved: 'Passage toegevoegd aan uw lokale bibliotheek.',
+    noPassage: '— Geen (handmatige invoer) —',
+    customPassages: '— Mijn passages —',
+    publicPassages: '— Publieke passages —',
   }
 };
 
@@ -466,6 +546,246 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = String(str == null ? '' : str);
   return div.innerHTML;
+}
+
+// ═══════════════════════════════════════════════
+// PASSAGES (banque publique + banque locale)
+// ═══════════════════════════════════════════════
+const LOCAL_PASSAGES_KEY = 'augustine-local-passages-v1';
+let PASSAGES_PUBLIC = [];
+let PASSAGES_LOCAL = [];
+
+function loadLocalPassages() {
+  if (officeReady && Office.context && Office.context.document && Office.context.document.settings) {
+    try {
+      const v = Office.context.document.settings.get(LOCAL_PASSAGES_KEY);
+      if (Array.isArray(v)) return v;
+    } catch (e) {}
+  }
+  try {
+    const raw = localStorage.getItem(LOCAL_PASSAGES_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return [];
+}
+
+function saveLocalPassages(arr) {
+  if (officeReady && Office.context && Office.context.document && Office.context.document.settings) {
+    try {
+      Office.context.document.settings.set(LOCAL_PASSAGES_KEY, arr);
+      Office.context.document.settings.saveAsync();
+    } catch (e) {}
+  }
+  try { localStorage.setItem(LOCAL_PASSAGES_KEY, JSON.stringify(arr)); } catch (e) {}
+}
+
+async function loadPublicPassages() {
+  try {
+    const r = await fetch('passages.public.json', { cache: 'no-store' });
+    if (!r.ok) return [];
+    const data = await r.json();
+    return Array.isArray(data.passages) ? data.passages : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function passageKey(p) {
+  return `${p.workId}|${(p.book||'')}|${(p.chapter||'')}|${(p.para||'')}`;
+}
+
+function getPassagesForWork(workId) {
+  const localOnes = PASSAGES_LOCAL.filter(p => p.workId === workId);
+  const publicOnes = PASSAGES_PUBLIC.filter(p => p.workId === workId);
+  return { local: localOnes, public: publicOnes };
+}
+
+function renderPassageSelector() {
+  const sel = document.getElementById('citePassage');
+  const wrap = document.getElementById('passageSelectorDiv');
+  if (!sel || !wrap) return;
+  if (!selectedWork) { wrap.style.display = 'none'; return; }
+  const t = I18N[getLang()] || I18N.FR;
+  const { local, public: pub } = getPassagesForWork(selectedWork.id);
+  let html = `<option value="">${escapeHtml(t.noPassage)}</option>`;
+  if (local.length) {
+    html += `<optgroup label="${escapeHtml(t.customPassages)}">`;
+    local.forEach((p, i) => {
+      html += `<option value="local:${i}">${escapeHtml(p.ref || passageKey(p))}</option>`;
+    });
+    html += `</optgroup>`;
+  }
+  if (pub.length) {
+    html += `<optgroup label="${escapeHtml(t.publicPassages)}">`;
+    pub.forEach((p, i) => {
+      html += `<option value="public:${i}">${escapeHtml(p.ref || passageKey(p))}</option>`;
+    });
+    html += `</optgroup>`;
+  }
+  sel.innerHTML = html;
+  wrap.style.display = (local.length + pub.length) > 0 ? 'block' : 'block';
+}
+
+function applyPassage(p) {
+  if (!p) return;
+  const lang = getLang();
+  const fill = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+  fill('citeBook', p.book || '');
+  fill('citeChapter', p.chapter || '');
+  fill('citeParagraph', p.para || '');
+  fill('citeLatin', p.latin || '');
+  const trans = (lang === 'EN' && p.en) ? p.en : (lang === 'NL' && p.nl) ? p.nl : (p.fr || p.en || '');
+  fill('citeTrans', trans);
+  updatePreview();
+}
+
+// ═══════════════════════════════════════════════
+// PARSER CAG (heuristique)
+// ═══════════════════════════════════════════════
+// CAG copy typically yields lines like:
+//   "Augustinus Hipponensis, Confessiones, lib. 10 cap. 27 par. 38"
+//   followed by the Latin text. We tolerate variants.
+function parseCAGText(raw) {
+  if (!raw) return null;
+  const text = raw.replace(/\r\n?/g, '\n').trim();
+  if (!text) return null;
+
+  // Try to split on the first newline — header vs body
+  let header = text, body = '';
+  const firstNl = text.indexOf('\n');
+  if (firstNl > 0) {
+    header = text.slice(0, firstNl).trim();
+    body = text.slice(firstNl + 1).trim();
+  }
+
+  // Numeric reference patterns. We capture book/chap/para from:
+  //   "lib. X cap. Y par. Z" / "lib. X, cap. Y, par. Z"
+  //   "liber X capitulum Y paragraphus Z"
+  //   bare "X, Y, Z" or "X.Y.Z"
+  let book = '', chapter = '', para = '';
+
+  // Pattern 1: explicit lib/cap/par with optional Roman or Arabic
+  const m1 = header.match(/lib(?:er|\.)?\s*([IVXLCDM\d]+)[,\s]+cap(?:ut|\.)?\s*([IVXLCDM\d]+)(?:[,\s]+par(?:agraphus|\.)?\s*([IVXLCDM\d]+))?/i);
+  if (m1) {
+    book = m1[1] || ''; chapter = m1[2] || ''; para = m1[3] || '';
+  } else {
+    // Pattern 2: bare triplet "X, Y, Z" or "X.Y.Z" at end of header
+    const m2 = header.match(/([IVXLCDM\d]+)[\s,\.]+([IVXLCDM\d]+)[\s,\.]+([IVXLCDM\d]+)\s*$/);
+    if (m2) { book = m2[1]; chapter = m2[2]; para = m2[3]; }
+    else {
+      // Pattern 3: doublet "X, Y" at end (chapter, para — no book; or book, chapter)
+      const m3 = header.match(/([IVXLCDM\d]+)[\s,\.]+([IVXLCDM\d]+)\s*$/);
+      if (m3) { book = m3[1]; chapter = m3[2]; }
+    }
+  }
+
+  // Roman → Arabic for storage so the rest of the app's toRoman() can re-apply
+  function fromRoman(s) {
+    if (!s || /^\d+$/.test(s)) return s;
+    const map = { I:1,V:5,X:10,L:50,C:100,D:500,M:1000 };
+    const t = String(s).toUpperCase();
+    if (!/^[IVXLCDM]+$/.test(t)) return s;
+    let total = 0, prev = 0;
+    for (let i = t.length - 1; i >= 0; i--) {
+      const cur = map[t[i]];
+      if (cur < prev) total -= cur; else total += cur;
+      prev = cur;
+    }
+    return String(total);
+  }
+  book = fromRoman(book); chapter = fromRoman(chapter); para = fromRoman(para);
+
+  // Detect work by matching header against WORKS[].latin and abbrev
+  const headerLow = header.toLowerCase();
+  let work = null;
+  for (const w of WORKS) {
+    if (headerLow.includes(w.latin.toLowerCase())) { work = w; break; }
+  }
+  if (!work) {
+    for (const w of WORKS) {
+      // try abbrev with word boundary
+      const ab = w.abbrev.replace(/\./g, '').toLowerCase();
+      if (ab && new RegExp('\\b' + ab.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b').test(headerLow)) {
+        work = w; break;
+      }
+    }
+  }
+
+  // Latin body: strip CAG citation/footnote markers like "[¶]", "<>", inline numbers
+  const latin = body
+    .replace(/\[\d+\]/g, '')
+    .replace(/\{[^}]*\}/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!work && !latin && !book) return null;
+
+  const ref = [book, chapter, para].filter(Boolean).join(', ');
+  return {
+    workId: work ? work.id : null,
+    workLatin: work ? work.latin : null,
+    ref,
+    book, chapter, para,
+    latin,
+    fr: '', en: '', nl: '',
+    source: 'cag',
+    addedAt: new Date().toISOString()
+  };
+}
+
+let pendingImport = null;
+
+function showImportModal() {
+  pendingImport = null;
+  const modal = document.getElementById('importModal');
+  document.getElementById('importText').value = '';
+  document.getElementById('importParsed').style.display = 'none';
+  document.getElementById('importParsed').innerHTML = '';
+  document.getElementById('importSave').disabled = true;
+  modal.classList.add('show');
+  setTimeout(() => document.getElementById('importText').focus(), 50);
+}
+
+function hideImportModal() {
+  document.getElementById('importModal').classList.remove('show');
+  pendingImport = null;
+}
+
+function runImportParse() {
+  const t = I18N[getLang()] || I18N.FR;
+  const raw = document.getElementById('importText').value;
+  const parsed = parseCAGText(raw);
+  const out = document.getElementById('importParsed');
+  if (!parsed || (!parsed.workId && !parsed.latin)) {
+    out.style.display = 'block';
+    out.innerHTML = `<span style="color:var(--vermillion)">⚠ ${escapeHtml(t.importNoMatch)}</span>`;
+    document.getElementById('importSave').disabled = true;
+    pendingImport = null;
+    return;
+  }
+  pendingImport = parsed;
+  document.getElementById('importSave').disabled = false;
+  out.style.display = 'block';
+  out.innerHTML = `<b>${escapeHtml(t.importParsedHeader)}</b><br>
+    <b>${escapeHtml('Œuvre')}:</b> ${escapeHtml(parsed.workLatin || '?')}<br>
+    <b>${escapeHtml('Référence')}:</b> ${escapeHtml(parsed.ref || '?')}<br>
+    <b>${escapeHtml('Latin')}:</b> <i>${escapeHtml((parsed.latin || '').slice(0, 240))}${parsed.latin && parsed.latin.length > 240 ? '…' : ''}</i>`;
+}
+
+function runImportSave() {
+  if (!pendingImport || !pendingImport.workId) return;
+  const t = I18N[getLang()] || I18N.FR;
+  PASSAGES_LOCAL.unshift(pendingImport);
+  saveLocalPassages(PASSAGES_LOCAL);
+  showToast(t.importSaved, 'success');
+  // Auto-select it if the current selected work matches
+  if (selectedWork && selectedWork.id === pendingImport.workId) {
+    renderPassageSelector();
+    const sel = document.getElementById('citePassage');
+    sel.value = 'local:0';
+    applyPassage(pendingImport);
+  }
+  hideImportModal();
 }
 
 function loadHistory() {
@@ -511,13 +831,16 @@ function showToast(message, type) {
 }
 
 citationHistory = loadHistory();
+PASSAGES_LOCAL = loadLocalPassages();
 
-// Re-load history once Office is ready (Roaming Settings preferred over localStorage)
+// Re-load history + local passages once Office is ready (RoamingSettings preferred)
 window.augRefreshHistory = function() {
   citationHistory = loadHistory();
+  PASSAGES_LOCAL = loadLocalPassages();
   if (typeof renderHistory === 'function' && document.getElementById('historyList')) {
     renderHistory();
   }
+  if (typeof renderPassageSelector === 'function') renderPassageSelector();
 };
 
 // Conversion Chiffres Romains
@@ -609,12 +932,13 @@ function renderWorks() {
       }
 
       document.getElementById('citationBuilder').classList.remove('hidden');
-      
+
       let builderTitle = selectedWork.latin;
       if(docLang === 'FR' && selectedWork.french) builderTitle = selectedWork.french;
       if(docLang === 'EN' && selectedWork.english) builderTitle = selectedWork.english;
       document.getElementById('builderTitle').textContent = builderTitle;
-      
+
+      renderPassageSelector();
       updatePreview();
       renderWorks();
       setTimeout(() => document.getElementById('citationBuilder').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
@@ -808,12 +1132,42 @@ function updatePreview() {
 // ═══════════════════════════════════════════════
 // INITIALISATION
 // ═══════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   applyI18N();
   renderFilters();
   renderWorks();
   renderHistory();
   applyOwnTransLabel();
+
+  // Load public passages bank
+  loadPublicPassages().then(arr => {
+    PASSAGES_PUBLIC = arr;
+    if (selectedWork) renderPassageSelector();
+  });
+
+  // Passage selector → auto-fill form
+  document.getElementById('citePassage').addEventListener('change', function() {
+    if (!this.value || !selectedWork) return;
+    const [origin, idxStr] = this.value.split(':');
+    const idx = parseInt(idxStr, 10);
+    const { local, public: pub } = getPassagesForWork(selectedWork.id);
+    const p = (origin === 'local') ? local[idx] : pub[idx];
+    if (p) applyPassage(p);
+  });
+
+  // Import CAG modal
+  document.getElementById('importCagBtn').addEventListener('click', showImportModal);
+  document.getElementById('importCancel').addEventListener('click', hideImportModal);
+  document.getElementById('importParse').addEventListener('click', runImportParse);
+  document.getElementById('importSave').addEventListener('click', runImportSave);
+  document.getElementById('importModal').addEventListener('click', (e) => {
+    if (e.target.id === 'importModal') hideImportModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('importModal').classList.contains('show')) {
+      hideImportModal();
+    }
+  });
 
   // Gestion des Onglets
   document.querySelectorAll('.tab').forEach(tab => {
@@ -844,6 +1198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderFilters();
     renderWorks();
     renderHistory();
+    renderPassageSelector();
     updatePreview();
   });
 
