@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://appsforoffice.microsoft.com https://*.officeapps.live.com https://*.office.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://appsforoffice.microsoft.com; connect-src 'self' https://appsforoffice.microsoft.com https://*.officeapps.live.com https://*.office.com;"/>
+  <meta name="referrer" content="no-referrer"/>
   <title>Augustinus Citator</title>
-  
+
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
   
   <script>
@@ -145,17 +147,17 @@
   </div>
 
   <div class="tabs">
-    <button class="tab active" data-tab="cite">Cite</button>
-    <button class="tab" data-tab="history">History</button>
-    <button class="tab" data-tab="settings">Settings</button>
+    <button class="tab active" data-tab="cite" data-i18n="tabCite">Cite</button>
+    <button class="tab" data-tab="history" data-i18n="tabHistory">History</button>
+    <button class="tab" data-tab="settings" data-i18n="tabSettings">Settings</button>
   </div>
 
   <div class="content">
-    
+
     <div id="tab-cite" class="tab-panel active">
       <div class="search-box">
         <span class="search-icon">⌕</span>
-        <input type="text" id="searchInput" placeholder="Rechercher une œuvre (ex: conf, trin, civ)..." autocomplete="off"/>
+        <input type="text" id="searchInput" data-i18n-ph="searchPh" placeholder="Rechercher une œuvre (ex: conf, trin, civ)..." autocomplete="off"/>
       </div>
 
       <div class="filters" id="categoryFilters"></div>
@@ -164,66 +166,66 @@
 
       <div id="citationBuilder" class="citation-builder hidden">
         <h3 style="font-family: 'Crimson Pro'; margin-bottom: 10px; font-size: 15px; color: var(--ink);">
-          <span id="builderTitle">Titre</span>
+          <span id="builderTitle" data-i18n="builderTitleDefault">Titre</span>
         </h3>
 
         <div class="radio-group" id="citeTypeGroup">
-          <label><input type="radio" name="citeType" value="full"/> 1ère note (Complète)</label>
-          <label><input type="radio" name="citeType" value="short"/> Note abrégée <span id="autoBadge" class="auto-badge hidden">Auto</span></label>
+          <label><input type="radio" name="citeType" value="full"/> <span data-i18n="firstNote">1ère note (Complète)</span></label>
+          <label><input type="radio" name="citeType" value="short"/> <span data-i18n="shortNote">Note abrégée</span> <span id="autoBadge" class="auto-badge hidden" data-i18n="autoBadge">Auto</span></label>
         </div>
 
         <div class="form-row">
-          <div class="form-group"><label>Livre (Liber)</label><input type="text" id="citeBook" placeholder="ex: X"/></div>
-          <div class="form-group"><label>Chap. (Caput)</label><input type="text" id="citeChapter" placeholder="ex: 27"/></div>
-          <div class="form-group"><label>Paragraphe</label><input type="text" id="citeParagraph" placeholder="ex: 38"/></div>
+          <div class="form-group"><label data-i18n="lblBook">Livre (Liber)</label><input type="text" id="citeBook" data-i18n-ph="phBook" placeholder="ex: X"/></div>
+          <div class="form-group"><label data-i18n="lblChap">Chap. (Caput)</label><input type="text" id="citeChapter" data-i18n-ph="phChap" placeholder="ex: 27"/></div>
+          <div class="form-group"><label data-i18n="lblPara">Paragraphe</label><input type="text" id="citeParagraph" data-i18n-ph="phPara" placeholder="ex: 38"/></div>
         </div>
 
         <div class="form-row">
-          <div class="form-group"><label>Page / Col.</label><input type="text" id="citePage" placeholder="ex: 175"/></div>
-          <div class="form-group"><label>Vol. spécifique (si besoin)</label><input type="text" id="citeVol" placeholder="ex: CCSL 48"/></div>
+          <div class="form-group"><label data-i18n="lblPage">Page / Col.</label><input type="text" id="citePage" data-i18n-ph="phPage" placeholder="ex: 175"/></div>
+          <div class="form-group"><label data-i18n="lblVol">Vol. spécifique (si besoin)</label><input type="text" id="citeVol" data-i18n-ph="phVol" placeholder="ex: CCSL 48"/></div>
         </div>
 
         <div class="form-group">
-          <label>Texte Latin (sans italique selon KUL)</label>
-          <textarea id="citeLatin" placeholder="Sero te amavi, pulchritudo..."></textarea>
+          <label data-i18n="lblLatin">Texte Latin (sans italique selon KUL)</label>
+          <textarea id="citeLatin" data-i18n-ph="phLatin" placeholder="Sero te amavi, pulchritudo..."></textarea>
         </div>
 
         <div class="form-group">
-          <label>Texte Traduit</label>
-          <textarea id="citeTrans" placeholder="Bien tard je t'ai aimée..."></textarea>
+          <label data-i18n="lblTrans">Texte Traduit</label>
+          <textarea id="citeTrans" data-i18n-ph="phTrans" placeholder="Bien tard je t'ai aimée..."></textarea>
           <div class="checkbox-group">
             <input type="checkbox" id="ownTranslation"/>
             <label for="ownTranslation" id="ownTransLabel">Ceci est ma propre traduction</label>
           </div>
         </div>
 
-        <div class="form-group" id="translatorDiv"><label>Traducteur externe</label><input type="text" id="citeTranslator" placeholder="ex: M. Moreau"/></div>
+        <div class="form-group" id="translatorDiv"><label data-i18n="lblTranslator">Traducteur externe</label><input type="text" id="citeTranslator" data-i18n-ph="phTranslator" placeholder="ex: M. Moreau"/></div>
 
-        <label style="font-size: 10px; color: var(--ink-faded); text-transform: uppercase;">Aperçu de la note de bas de page</label>
-        <div class="preview-box" id="citationPreview">Sélectionnez une œuvre...</div>
+        <label style="font-size: 10px; color: var(--ink-faded); text-transform: uppercase;" data-i18n="previewLabel">Aperçu de la note de bas de page</label>
+        <div class="preview-box" id="citationPreview" data-i18n="previewEmpty">Sélectionnez une œuvre...</div>
 
-        <button class="btn" id="insertBtn" disabled>Insérer en note de bas de page</button>
+        <button class="btn" id="insertBtn" data-i18n="btnInsert" disabled>Insérer en note de bas de page</button>
       </div>
     </div>
 
     <div id="tab-history" class="tab-panel">
       <div id="historyList">
-        <p style="text-align:center; color: var(--ink-faded); margin-top:20px;">Aucune citation récente.</p>
+        <p style="text-align:center; color: var(--ink-faded); margin-top:20px;" data-i18n="recentEmpty">Aucune citation récente.</p>
       </div>
     </div>
 
     <div id="tab-settings" class="tab-panel">
       <div class="form-group" style="margin-bottom: 15px;">
-        <label>Langue de votre document (Ajuste les titres et balises)</label>
+        <label data-i18n="settingsDocLang">Langue de votre document (Ajuste les titres et balises)</label>
         <select id="docLang">
           <option value="FR">Français</option>
           <option value="EN">English</option>
           <option value="NL">Nederlands</option>
         </select>
       </div>
-      
+
       <div class="form-group" style="margin-bottom: 15px;">
-        <label>Édition / Série par défaut</label>
+        <label data-i18n="settingsStyle">Édition / Série par défaut</label>
         <select id="citeStyle">
           <option value="cchrsl">CChr SL (KU Leuven)</option>
           <option value="ccsl">CCSL (Standard)</option>
@@ -236,26 +238,26 @@
 
       <div class="checkbox-group" style="margin-bottom: 10px; border-top: 1px solid var(--border); padding-top: 10px;">
         <input type="checkbox" id="optIncludeCity"/>
-        <label for="optIncludeCity">Inclure la ville d'édition (Ancienne norme pré-CMOS 18)</label>
+        <label for="optIncludeCity" data-i18n="settingsIncludeCity">Inclure la ville d'édition (Ancienne norme pré-CMOS 18)</label>
       </div>
 
       <div class="form-group" style="margin-bottom: 12px;">
-        <label>Type d'insertion dans Word</label>
+        <label data-i18n="settingsInsertType">Type d'insertion dans Word</label>
         <select id="insertType">
-          <option value="footnote">Note de bas de page</option>
-          <option value="endnote">Note de fin</option>
-          <option value="inline">Citation inline (dans le texte)</option>
+          <option value="footnote" data-i18n="insertFootnote">Note de bas de page</option>
+          <option value="endnote" data-i18n="insertEndnote">Note de fin</option>
+          <option value="inline" data-i18n="insertInline">Citation inline (dans le texte)</option>
         </select>
       </div>
 
       <div class="checkbox-group" style="margin-bottom: 8px;">
         <input type="checkbox" id="optRoman" checked/>
-        <label for="optRoman">Chiffres romains pour les livres</label>
+        <label for="optRoman" data-i18n="settingsRoman">Chiffres romains pour les livres</label>
       </div>
 
       <div class="checkbox-group" style="margin-bottom: 8px;">
         <input type="checkbox" id="optIncludeDate"/>
-        <label for="optIncludeDate">Inclure la date de composition</label>
+        <label for="optIncludeDate" data-i18n="settingsDate">Inclure la date de composition</label>
       </div>
     </div>
 
@@ -358,10 +360,98 @@ let citationHistory = [];
 const HISTORY_KEY = 'augustine-history-kul';
 
 const I18N = {
-  FR: { author: 'Augustin', myTrans: 'traduction personnelle', ownLabel: 'Ceci est ma propre traduction', recentEmpty: 'Aucune citation récente.', inserted: 'Citation insérée ✓', copied: 'Citation copiée dans le presse-papier (mode navigateur).', noWord: "Word n'a pas répondu." },
-  EN: { author: 'Augustine',  myTrans: 'my translation',         ownLabel: 'This is my own translation',  recentEmpty: 'No recent citations.',    inserted: 'Citation inserted ✓', copied: 'Citation copied to clipboard (browser mode).',          noWord: 'Word did not respond.' },
-  NL: { author: 'Augustinus', myTrans: 'eigen vertaling',        ownLabel: 'Dit is mijn eigen vertaling', recentEmpty: 'Geen recente citaten.',  inserted: 'Citaat ingevoegd ✓', copied: 'Citaat gekopieerd naar klembord (browsermodus).',       noWord: 'Word reageerde niet.' }
+  FR: {
+    author: 'Augustin', myTrans: 'traduction personnelle', ownLabel: 'Ceci est ma propre traduction',
+    recentEmpty: 'Aucune citation récente.', inserted: 'Citation insérée ✓',
+    copied: 'Citation copiée dans le presse-papier (mode navigateur).', noWord: "Word n'a pas répondu.",
+    booksAbbr: 'liv.', tabCite: 'Citer', tabHistory: 'Historique', tabSettings: 'Paramètres',
+    searchPh: 'Rechercher une œuvre (ex: conf, trin, civ)…',
+    builderTitleDefault: 'Titre', firstNote: '1ʳᵉ note (Complète)', shortNote: 'Note abrégée', autoBadge: 'Auto',
+    lblBook: 'Livre (Liber)', phBook: 'ex: X',
+    lblChap: 'Chap. (Caput)', phChap: 'ex: 27',
+    lblPara: 'Paragraphe', phPara: 'ex: 38',
+    lblPage: 'Page / Col.', phPage: 'ex: 175',
+    lblVol: 'Vol. spécifique (si besoin)', phVol: 'ex: CCSL 48',
+    lblLatin: 'Texte Latin (sans italique selon KUL)', phLatin: 'Sero te amavi, pulchritudo…',
+    lblTrans: 'Texte Traduit', phTrans: 'Bien tard je t\'ai aimée…',
+    lblTranslator: 'Traducteur externe', phTranslator: 'ex: M. Moreau',
+    previewLabel: 'Aperçu de la citation', previewEmpty: 'Sélectionnez une œuvre…',
+    fillDetails: 'Remplissez les détails…',
+    settingsDocLang: 'Langue de votre document (ajuste les titres et balises)',
+    settingsStyle: 'Édition / Série par défaut',
+    settingsIncludeCity: 'Inclure la ville d\'édition (ancienne norme pré-CMOS 18)',
+    settingsInsertType: 'Type d\'insertion dans Word',
+    insertFootnote: 'Note de bas de page', insertEndnote: 'Note de fin', insertInline: 'Citation inline (dans le texte)',
+    settingsRoman: 'Chiffres romains pour les livres',
+    settingsDate: 'Inclure la date de composition',
+    btnInsert: 'Insérer',
+  },
+  EN: {
+    author: 'Augustine', myTrans: 'my translation', ownLabel: 'This is my own translation',
+    recentEmpty: 'No recent citations.', inserted: 'Citation inserted ✓',
+    copied: 'Citation copied to clipboard (browser mode).', noWord: 'Word did not respond.',
+    booksAbbr: 'bks.', tabCite: 'Cite', tabHistory: 'History', tabSettings: 'Settings',
+    searchPh: 'Search a work (e.g. conf, trin, civ)…',
+    builderTitleDefault: 'Title', firstNote: '1st note (full)', shortNote: 'Short note', autoBadge: 'Auto',
+    lblBook: 'Book (Liber)', phBook: 'e.g. X',
+    lblChap: 'Chap. (Caput)', phChap: 'e.g. 27',
+    lblPara: 'Paragraph', phPara: 'e.g. 38',
+    lblPage: 'Page / Col.', phPage: 'e.g. 175',
+    lblVol: 'Specific vol. (optional)', phVol: 'e.g. CCSL 48',
+    lblLatin: 'Latin text (no italics per KU Leuven)', phLatin: 'Sero te amavi, pulchritudo…',
+    lblTrans: 'Translated text', phTrans: 'Late have I loved you…',
+    lblTranslator: 'External translator', phTranslator: 'e.g. M. Moreau',
+    previewLabel: 'Citation preview', previewEmpty: 'Select a work…',
+    fillDetails: 'Fill in the details…',
+    settingsDocLang: 'Document language (adjusts titles and markers)',
+    settingsStyle: 'Default edition / series',
+    settingsIncludeCity: 'Include place of publication (pre-CMOS 18 style)',
+    settingsInsertType: 'Word insertion type',
+    insertFootnote: 'Footnote', insertEndnote: 'Endnote', insertInline: 'Inline citation',
+    settingsRoman: 'Roman numerals for books',
+    settingsDate: 'Include composition date',
+    btnInsert: 'Insert',
+  },
+  NL: {
+    author: 'Augustinus', myTrans: 'eigen vertaling', ownLabel: 'Dit is mijn eigen vertaling',
+    recentEmpty: 'Geen recente citaten.', inserted: 'Citaat ingevoegd ✓',
+    copied: 'Citaat gekopieerd naar klembord (browsermodus).', noWord: 'Word reageerde niet.',
+    booksAbbr: 'bk.', tabCite: 'Citeren', tabHistory: 'Geschiedenis', tabSettings: 'Instellingen',
+    searchPh: 'Zoek een werk (bv. conf, trin, civ)…',
+    builderTitleDefault: 'Titel', firstNote: '1e noot (volledig)', shortNote: 'Verkorte noot', autoBadge: 'Auto',
+    lblBook: 'Boek (Liber)', phBook: 'bv. X',
+    lblChap: 'Hoofdst. (Caput)', phChap: 'bv. 27',
+    lblPara: 'Paragraaf', phPara: 'bv. 38',
+    lblPage: 'Pagina / Col.', phPage: 'bv. 175',
+    lblVol: 'Specifiek volume (optioneel)', phVol: 'bv. CCSL 48',
+    lblLatin: 'Latijnse tekst (geen cursief volgens KU Leuven)', phLatin: 'Sero te amavi, pulchritudo…',
+    lblTrans: 'Vertaalde tekst', phTrans: 'Laat heb ik u liefgehad…',
+    lblTranslator: 'Externe vertaler', phTranslator: 'bv. M. Moreau',
+    previewLabel: 'Citaatvoorbeeld', previewEmpty: 'Selecteer een werk…',
+    fillDetails: 'Vul de details in…',
+    settingsDocLang: 'Documenttaal (past titels en markeringen aan)',
+    settingsStyle: 'Standaardeditie / -reeks',
+    settingsIncludeCity: 'Plaats van uitgave opnemen (pre-CMOS 18)',
+    settingsInsertType: 'Invoegtype in Word',
+    insertFootnote: 'Voetnoot', insertEndnote: 'Eindnoot', insertInline: 'Inline citaat',
+    settingsRoman: 'Romeinse cijfers voor boeken',
+    settingsDate: 'Compositiedatum opnemen',
+    btnInsert: 'Invoegen',
+  }
 };
+
+function applyI18N() {
+  const lang = getLang();
+  const t = I18N[lang] || I18N.FR;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key] != null) el.textContent = t[key];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.dataset.i18nPh;
+    if (t[key] != null) el.setAttribute('placeholder', t[key]);
+  });
+}
 function getLang() {
   const el = document.getElementById('docLang');
   return (el && I18N[el.value]) ? el.value : 'FR';
@@ -492,9 +582,10 @@ function renderWorks() {
     if(docLang === 'FR' && w.french) mainTitle = w.french;
     if(docLang === 'EN' && w.english) mainTitle = w.english;
     
+    const tUI = I18N[docLang] || I18N.FR;
     let meta = `<span class="abbrev">${w.abbrev}</span>`;
     if(w.date) meta += `<span>${w.date}</span>`;
-    if(w.books > 0) meta += `<span>${w.books} liv.</span>`;
+    if(w.books > 0) meta += `<span>${w.books} ${tUI.booksAbbr}</span>`;
 
     return `
     <div class="work-card ${selectedWork && selectedWork.id === w.id ? 'selected' : ''}" data-id="${w.id}">
@@ -613,6 +704,12 @@ function formatCitation() {
   const includeDate = document.getElementById('optIncludeDate') && document.getElementById('optIncludeDate').checked;
 
   let author = I18N[docLang] ? I18N[docLang].author : 'Augustinus';
+  // Style-specific author overrides:
+  //   ba  -> always "Augustin" (BA = Bibliothèque Augustinienne, French series)
+  //   wsa -> always "Augustine" (WSA = Works of Saint Augustine, English series)
+  if (style === 'ba') author = 'Augustin';
+  if (style === 'wsa') author = 'Augustine';
+
   let loc = '';
   if (book) loc += useRoman ? toRoman(book) : book;
   if (chapter) loc += (loc ? ', ' : '') + chapter;
@@ -621,7 +718,10 @@ function formatCitation() {
   let reference = '';
 
   if (citeType === 'full') {
-    let title = `<i>${w.latin}</i>`;
+    // WSA convention: English title in quotes (not italics) + "in WSA Vol"
+    let title = (style === 'wsa')
+      ? `&ldquo;${escapeHtml(w.english || w.latin)},&rdquo;`
+      : `<i>${w.latin}</i>`;
     let seriesInfo = "";
     let pubInfo = "";
 
@@ -656,20 +756,20 @@ function formatCitation() {
         break;
       case 'wsa':
         let wsaVol = volOverride || w.wsa || '';
-        if (wsaVol) seriesInfo = `Works of Saint Augustine ${wsaVol}`;
+        if (wsaVol) seriesInfo = `in WSA ${wsaVol}`;
         break;
     }
 
     reference = `${author}, ${title}`;
     if (loc) reference += ` ${loc}`;
-    if (w.editor) reference += `, ed. ${w.editor}`;
+    if (w.editor && style !== 'wsa') reference += `, ed. ${w.editor}`;
     if (seriesInfo) reference += `, ${seriesInfo}`;
     if (pubInfo) reference += ` ${pubInfo}`;
     if (page) reference += `, ${page}`;
     if (includeDate && w.date) reference += ` [${w.date}]`;
   } else {
-    let abbrev = capitalizeFirst(w.abbrev);
-    reference = `${author}, <i>${abbrev}</i>`;
+    // Abbreviated / "short" form per classical convention: "Aug., conf. X, 27, 38"
+    reference = `Aug., <i>${w.abbrev}</i>`;
     if (loc) reference += ` ${loc}`;
     if (page) reference += `, ${page}`;
     if (includeDate && w.date) reference += ` [${w.date}]`;
@@ -700,7 +800,8 @@ function formatCitation() {
 function updatePreview() {
   const citationHtml = formatCitation();
   const preview = document.getElementById('citationPreview');
-  preview.innerHTML = citationHtml || 'Remplissez les détails...';
+  const tUI = I18N[getLang()] || I18N.FR;
+  preview.innerHTML = citationHtml || tUI.fillDetails;
   document.getElementById('insertBtn').disabled = !citationHtml;
 }
 
@@ -708,6 +809,7 @@ function updatePreview() {
 // INITIALISATION
 // ═══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  applyI18N();
   renderFilters();
   renderWorks();
   renderHistory();
@@ -737,6 +839,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Changement de langue dynamique
   document.getElementById('docLang').addEventListener('change', function() {
+    applyI18N();
     applyOwnTransLabel();
     renderFilters();
     renderWorks();

@@ -36,6 +36,8 @@ function send(res, status, body, headers = {}) {
   res.writeHead(status, {
     'Access-Control-Allow-Origin': '*',
     'Cache-Control': 'no-store',
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'no-referrer',
     ...headers,
   });
   res.end(body);
@@ -59,6 +61,8 @@ function handler(req, res) {
       'Content-Length': stats.size,
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'no-referrer',
     });
     const stream = fs.createReadStream(filePath);
     stream.on('error', () => res.destroy());
