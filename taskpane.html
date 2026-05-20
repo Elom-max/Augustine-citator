@@ -12,6 +12,10 @@
     Office.onReady(function(info) {
       if (info.host === Office.HostType.Word) {
         officeReady = true;
+        // Refresh history from Roaming Settings once Office is available
+        if (typeof window.augRefreshHistory === 'function') {
+          try { window.augRefreshHistory(); } catch (e) { console.error(e); }
+        }
       }
     });
   </script>
@@ -124,6 +128,13 @@
     
     .history-item { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 6px; font-size: 12px; cursor: pointer; }
     .history-ref { font-family: 'Crimson Pro', serif; }
+
+    /* ── Toast notifications ── */
+    .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(20px); min-width: 220px; max-width: 90%; padding: 10px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 9999; text-align: center; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: #2d7a4a; }
+    .toast.error { background: var(--vermillion); }
+    .toast.info { background: var(--ink-light); }
   </style>
 </head>
 <body>
@@ -325,10 +336,65 @@ let selectedWork = null;
 let activeCategory = "all";
 let citationHistory = [];
 
-try {
-  const saved = localStorage.getItem('augustine-history-kul');
-  if (saved) citationHistory = JSON.parse(saved);
-} catch(e) {}
+const HISTORY_KEY = 'augustine-history-kul';
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = String(str == null ? '' : str);
+  return div.innerHTML;
+}
+
+function loadHistory() {
+  if (officeReady && Office.context && Office.context.document && Office.context.document.settings) {
+    try {
+      const v = Office.context.document.settings.get(HISTORY_KEY);
+      if (Array.isArray(v)) return v;
+    } catch (e) { /* fall through */ }
+  }
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return [];
+}
+
+function saveHistory(hist) {
+  if (officeReady && Office.context && Office.context.document && Office.context.document.settings) {
+    try {
+      Office.context.document.settings.set(HISTORY_KEY, hist);
+      Office.context.document.settings.saveAsync();
+    } catch (e) { /* fall through to localStorage */ }
+  }
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(hist)); } catch (e) {}
+}
+
+let toastTimer = null;
+function showToast(message, type) {
+  let el = document.getElementById('augToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'augToast';
+    el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  el.className = 'toast ' + (type || 'info');
+  el.textContent = message;
+  // Force reflow for transition
+  void el.offsetWidth;
+  el.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.classList.remove('show'); }, 3500);
+}
+
+citationHistory = loadHistory();
+
+// Re-load history once Office is ready (Roaming Settings preferred over localStorage)
+window.augRefreshHistory = function() {
+  citationHistory = loadHistory();
+  if (typeof renderHistory === 'function' && document.getElementById('historyList')) {
+    renderHistory();
+  }
+};
 
 // Conversion Chiffres Romains
 function toRoman(num) {
@@ -464,15 +530,15 @@ function formatCitation() {
   const style = document.getElementById('citeStyle').value;
   const includeCity = document.getElementById('optIncludeCity').checked;
   
-  const book = document.getElementById('citeBook').value.trim();
-  const chapter = document.getElementById('citeChapter').value.trim();
-  const para = document.getElementById('citeParagraph').value.trim();
-  const page = document.getElementById('citePage').value.trim();
-  const volOverride = document.getElementById('citeVol').value.trim();
-  
-  const textLatin = document.getElementById('citeLatin').value.trim();
-  const textTrans = document.getElementById('citeTrans').value.trim();
-  const translator = document.getElementById('citeTranslator').value.trim();
+  const book = escapeHtml(document.getElementById('citeBook').value.trim());
+  const chapter = escapeHtml(document.getElementById('citeChapter').value.trim());
+  const para = escapeHtml(document.getElementById('citeParagraph').value.trim());
+  const page = escapeHtml(document.getElementById('citePage').value.trim());
+  const volOverride = escapeHtml(document.getElementById('citeVol').value.trim());
+
+  const textLatin = escapeHtml(document.getElementById('citeLatin').value.trim());
+  const textTrans = escapeHtml(document.getElementById('citeTrans').value.trim());
+  const translator = escapeHtml(document.getElementById('citeTranslator').value.trim());
   const isOwnTranslation = document.getElementById('ownTranslation').checked;
 
   let author = "Augustinus"; // Fixe selon KUL
@@ -635,13 +701,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     citationHistory.unshift({ workId: selectedWork.id, time: new Date().getTime(), citation: citationHtml });
     if(citationHistory.length > 50) citationHistory.pop();
-    try { localStorage.setItem('augustine-history-kul', JSON.stringify(citationHistory)); } catch(e) {}
+    saveHistory(citationHistory);
 
     if (!officeReady) {
       const temp = document.createElement('div');
       temp.innerHTML = citationHtml;
-      navigator.clipboard.writeText(temp.textContent || temp.innerText);
-      alert('Texte copié dans le presse-papier (Mode Navigateur) !');
+      try {
+        await navigator.clipboard.writeText(temp.textContent || temp.innerText);
+        showToast('Citation copiée dans le presse-papier (mode navigateur).', 'info');
+      } catch (e) {
+        showToast('Impossible de copier dans le presse-papier : ' + (e.message || e), 'error');
+      }
       return;
     }
 
@@ -652,8 +722,11 @@ document.addEventListener('DOMContentLoaded', () => {
         footnote.body.insertHtml(citationHtml, Word.InsertLocation.end);
         await context.sync();
       });
+      showToast('Citation insérée ✓', 'success');
     } catch (error) {
       console.error(error);
+      const msg = (error && error.message) ? error.message : 'Word n\'a pas répondu.';
+      showToast('Erreur lors de l\'insertion : ' + msg, 'error');
     }
   });
 });

@@ -1,0 +1,16 @@
+# Generated SSL certificates (do not commit secrets)
+key.pem
+cert.pem
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
