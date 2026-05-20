@@ -1,0 +1,185 @@
+{
+  "_meta": {
+    "description": "Public-domain Augustine passages. Latin texts from Patrologia Latina (Migne, 1844-1865, PD). French translations from Péronne et al. (Vivès, 1864-1878) and M. Moreau (Migne 1864) — all PD. English from E.B. Pusey (1838, Oxford Library of the Fathers) and Marcus Dods (1871, Edinburgh) and Philip Schaff (NPNF, 1886-1890) — all PD.",
+    "licence": "Public domain. Safe to redistribute.",
+    "do_not_add_here": "Do not add CCSL, CSEL post-1929, BA, WSA, or other copyrighted critical editions/translations. Use passages.local (browser storage) for those — see in-app 'Importer depuis CAG' button."
+  },
+  "passages": [
+    {
+      "workId": "conf",
+      "ref": "I, 1, 1",
+      "book": "1", "chapter": "1", "para": "1",
+      "latin": "Magnus es, Domine, et laudabilis valde: magna virtus tua, et sapientiae tuae non est numerus. Et laudare te vult homo, aliqua portio creaturae tuae… Tu excitas, ut laudare te delectet; quia fecisti nos ad te, et inquietum est cor nostrum, donec requiescat in te.",
+      "fr": "Vous êtes grand, Seigneur, et infiniment digne de louange; votre puissance est grande, et votre sagesse n'a point de bornes. Et l'homme veut vous louer, l'homme, cette faible partie de votre création… C'est vous qui l'excitez à goûter le bonheur de vous louer; car vous nous avez faits pour vous, et notre cœur est inquiet jusqu'à ce qu'il repose en vous.",
+      "en": "Great art Thou, O Lord, and greatly to be praised; great is Thy power, and Thy wisdom infinite. And Thee would man praise; man, but a particle of Thy creation… Thou awakest us to delight in Thy praise; for Thou madest us for Thyself, and our heart is restless, until it repose in Thee."
+    },
+    {
+      "workId": "conf",
+      "ref": "III, 6, 11",
+      "book": "3", "chapter": "6", "para": "11",
+      "latin": "Tu autem eras interior intimo meo et superior summo meo.",
+      "fr": "Mais vous étiez plus intime que le plus intime de moi-même, et plus élevé que ce qu'il y a de plus élevé en moi.",
+      "en": "But Thou wert more inward to me than my most inward part; and higher than my highest."
+    },
+    {
+      "workId": "conf",
+      "ref": "VII, 10, 16",
+      "book": "7", "chapter": "10", "para": "16",
+      "latin": "Et inde admonitus redire ad memet ipsum, intravi in intima mea, duce te; et potui, quoniam factus es adiutor meus.",
+      "fr": "Et de là, averti de rentrer en moi-même, j'entrai dans le fond de mon âme, vous me servant de guide; et je le pus, parce que vous vous êtes fait mon soutien.",
+      "en": "And being thence admonished to return to myself, I entered even into my inward self, Thou being my Guide: and able I was, for Thou wert become my Helper."
+    },
+    {
+      "workId": "conf",
+      "ref": "VIII, 12, 29",
+      "book": "8", "chapter": "12", "para": "29",
+      "latin": "Audio vocem de vicina domo cum cantu dicentis et crebro repetentis, quasi pueri an puellae, nescio: Tolle, lege; tolle, lege.",
+      "fr": "J'entends d'une maison voisine une voix, comme d'un enfant ou d'une jeune fille, qui chantait et répétait souvent : Prends, lis; prends, lis.",
+      "en": "I heard from a neighbouring house a voice, as of boy or girl, I know not, chanting, and oft repeating, 'Take up and read; Take up and read.'"
+    },
+    {
+      "workId": "conf",
+      "ref": "X, 6, 8",
+      "book": "10", "chapter": "6", "para": "8",
+      "latin": "Quid autem amo, cum te amo? Non speciem corporis nec decus temporis, non candorem lucis ecce istum amicum oculis, non dulces melodias cantilenarum omnimodarum, non florum et unguentorum et aromatum suaveolentiam, non manna et mella, non membra acceptabilia carnis amplexibus: non haec amo, cum amo Deum meum.",
+      "fr": "Mais qu'est-ce que j'aime, lorsque je vous aime ? Ce n'est ni l'éclat d'un corps, ni la grâce d'une beauté passagère, ni cette lumière chère à nos yeux, ni les douces mélodies des chants de toute sorte, ni la suave odeur des fleurs, des parfums et des aromates, ni la manne ni le miel, ni des membres faits pour les embrassements de la chair : ce n'est rien de tout cela que j'aime quand j'aime mon Dieu.",
+      "en": "But what do I love, when I love Thee? not beauty of bodies, nor the fair harmony of time, nor the brightness of the light, so gladsome to our eyes, nor sweet melodies of varied songs, nor the fragrant smell of flowers, and ointments, and spices, not manna and honey, not limbs acceptable to embracements of flesh. None of these I love, when I love my God."
+    },
+    {
+      "workId": "conf",
+      "ref": "X, 27, 38",
+      "book": "10", "chapter": "27", "para": "38",
+      "latin": "Sero te amavi, pulchritudo tam antiqua et tam nova, sero te amavi! Et ecce intus eras et ego foris, et ibi te quaerebam, et in ista formosa, quae fecisti, deformis irruebam. Mecum eras, et tecum non eram.",
+      "fr": "Bien tard je vous ai aimée, ô beauté si ancienne et si nouvelle, bien tard je vous ai aimée ! Et voici, vous étiez au-dedans de moi, et moi j'étais au-dehors; et c'est là que je vous cherchais, et je me jetais, tout difforme, sur ces belles choses que vous avez créées. Vous étiez avec moi, et je n'étais pas avec vous.",
+      "en": "Too late loved I Thee, O Thou Beauty of ancient days, yet ever new! too late I loved Thee! And behold, Thou wert within, and I abroad, and there I searched for Thee; deformed I, plunging amid those fair forms which Thou hadst made. Thou wert with me, but I was not with Thee."
+    },
+    {
+      "workId": "conf",
+      "ref": "X, 29, 40",
+      "book": "10", "chapter": "29", "para": "40",
+      "latin": "Da quod iubes et iube quod vis.",
+      "fr": "Donnez ce que vous commandez, et commandez ce que vous voudrez.",
+      "en": "Give what Thou commandest, and command what Thou wilt."
+    },
+    {
+      "workId": "conf",
+      "ref": "XI, 14, 17",
+      "book": "11", "chapter": "14", "para": "17",
+      "latin": "Quid est ergo tempus? Si nemo ex me quaerat, scio; si quaerenti explicare velim, nescio.",
+      "fr": "Qu'est-ce donc que le temps ? Si personne ne me le demande, je le sais; mais si on me le demande et que je veuille l'expliquer, je ne le sais plus.",
+      "en": "What then is time? If no one asks of me, I know; if I wish to explain to him who asks, I know not."
+    },
+    {
+      "workId": "civ",
+      "ref": "XI, 26",
+      "book": "11", "chapter": "26", "para": "",
+      "latin": "Si enim fallor, sum. Nam qui non est, utique nec falli potest; ac per hoc sum, si fallor.",
+      "fr": "Car si je me trompe, je suis. Celui qui n'est pas ne saurait certainement se tromper; et par conséquent, si je me trompe, c'est que je suis.",
+      "en": "For if I am deceived, I am. For he who is not, cannot be deceived; and therefore, if I am deceived, by this same token I am."
+    },
+    {
+      "workId": "civ",
+      "ref": "XIV, 28",
+      "book": "14", "chapter": "28", "para": "",
+      "latin": "Fecerunt itaque civitates duas amores duo, terrenam scilicet amor sui usque ad contemptum Dei, caelestem vero amor Dei usque ad contemptum sui.",
+      "fr": "Deux amours ont donc fait deux cités : l'amour de soi jusqu'au mépris de Dieu, la cité terrestre; l'amour de Dieu jusqu'au mépris de soi, la cité céleste.",
+      "en": "Accordingly, two cities have been formed by two loves: the earthly by the love of self, even to the contempt of God; the heavenly by the love of God, even to the contempt of self."
+    },
+    {
+      "workId": "civ",
+      "ref": "XIX, 13, 1",
+      "book": "19", "chapter": "13", "para": "1",
+      "latin": "Pax omnium rerum tranquillitas ordinis. Ordo est parium dispariumque rerum sua cuique loca tribuens dispositio.",
+      "fr": "La paix de toutes choses est la tranquillité de l'ordre. L'ordre est une disposition qui assigne aux choses égales et inégales la place qui leur convient.",
+      "en": "The peace of all things is the tranquillity of order. Order is the distribution which allots things equal and unequal, each to its own place."
+    },
+    {
+      "workId": "civ",
+      "ref": "XXII, 30, 5",
+      "book": "22", "chapter": "30", "para": "5",
+      "latin": "Ibi vacabimus et videbimus, videbimus et amabimus, amabimus et laudabimus. Ecce quod erit in fine sine fine.",
+      "fr": "Là nous serons en repos et nous verrons, nous verrons et nous aimerons, nous aimerons et nous louerons. Voilà ce qui sera à la fin sans fin.",
+      "en": "There we shall rest and see, see and love, love and praise. Behold what shall be in the end, and shall not end."
+    },
+    {
+      "workId": "trin",
+      "ref": "VIII, 8, 12",
+      "book": "8", "chapter": "8", "para": "12",
+      "latin": "Immo vero vides Trinitatem, si caritatem vides.",
+      "fr": "Bien plus, tu vois la Trinité, si tu vois la charité.",
+      "en": "Nay, thou dost see the Trinity, if thou seest love."
+    },
+    {
+      "workId": "trin",
+      "ref": "XV, 28, 51",
+      "book": "15", "chapter": "28", "para": "51",
+      "latin": "Domine Deus une, Deus Trinitas, quaecumque dixi in his libris de tuo, agnoscant et tui; si qua de meo, et tu ignosce et tui.",
+      "fr": "Seigneur Dieu un, Dieu Trinité, ce que j'ai dit de vrai dans ces livres, que les vôtres le reconnaissent; ce que j'y ai mis de moi, pardonnez-le, vous et les vôtres.",
+      "en": "O Lord the one God, God the Trinity, whatever I have said in these books that is of Thine, may they acknowledge who are Thine; if anything of my own, may it be pardoned both by Thee and by those who are Thine."
+    },
+    {
+      "workId": "doctr_chr",
+      "ref": "I, 36, 40",
+      "book": "1", "chapter": "36", "para": "40",
+      "latin": "Quisquis igitur Scripturas divinas vel quamlibet earum partem intellexisse sibi videtur, ita ut eo intellectu non aedificet istam geminam caritatem Dei et proximi, nondum intellexit.",
+      "fr": "Quiconque donc s'imagine avoir compris les divines Écritures, ou quelque partie que ce soit, sans construire par cette intelligence le double amour de Dieu et du prochain, ne les a pas encore comprises.",
+      "en": "Whoever, therefore, thinks that he understands the divine Scriptures or any part of them so that it does not build the double love of God and of our neighbor does not understand it at all."
+    },
+    {
+      "workId": "sol",
+      "ref": "I, 2, 7",
+      "book": "1", "chapter": "2", "para": "7",
+      "latin": "Deum et animam scire cupio. Nihilne plus? Nihil omnino.",
+      "fr": "Je désire connaître Dieu et l'âme. Rien de plus ? Rien absolument.",
+      "en": "I desire to know God and the soul. Nothing more? Nothing whatever."
+    },
+    {
+      "workId": "mag",
+      "ref": "XIV, 46",
+      "book": "1", "chapter": "14", "para": "46",
+      "latin": "Magistrum, qui docet, intus habitare, Christum.",
+      "fr": "Le maître qui enseigne habite au-dedans, c'est le Christ.",
+      "en": "The Master who teaches dwells within: He is Christ."
+    },
+    {
+      "workId": "ench",
+      "ref": "I, 5",
+      "book": "1", "chapter": "1", "para": "5",
+      "latin": "Coli ergo Deum debet fide, spe, caritate.",
+      "fr": "Dieu doit donc être adoré par la foi, l'espérance et la charité.",
+      "en": "God is to be worshipped, then, by faith, hope, and love."
+    },
+    {
+      "workId": "jo_ev_tr",
+      "ref": "26, 4",
+      "book": "26", "chapter": "4", "para": "",
+      "latin": "Trahit sua quemque voluptas. Da amantem, et sentit quod dico.",
+      "fr": "Chacun est entraîné par son plaisir. Donnez-moi un homme qui aime, et il sentira ce que je dis.",
+      "en": "Every man is drawn by his own pleasure. Give me one who loves, and he feels what I say."
+    },
+    {
+      "workId": "s",
+      "ref": "169, 11, 13",
+      "book": "169", "chapter": "11", "para": "13",
+      "latin": "Qui ergo fecit te sine te, non te iustificat sine te.",
+      "fr": "Celui donc qui t'a fait sans toi ne te justifie pas sans toi.",
+      "en": "He who made you without you does not justify you without you."
+    },
+    {
+      "workId": "ep",
+      "ref": "130, 8, 17",
+      "book": "130", "chapter": "8", "para": "17",
+      "latin": "Cum ergo aliud sit beata vita, aliud miseria, quae nihil aliud est nisi privatio beatae vitae…",
+      "fr": "Comme la vie heureuse est une chose, et la misère une autre, laquelle n'est rien d'autre que la privation de la vie heureuse…",
+      "en": "Since therefore the blessed life is one thing, and misery another, which is nothing else than the privation of the blessed life…"
+    },
+    {
+      "workId": "spir_et_litt",
+      "ref": "III, 5",
+      "book": "1", "chapter": "3", "para": "5",
+      "latin": "Littera occidit, spiritus autem vivificat.",
+      "fr": "La lettre tue, mais l'esprit vivifie.",
+      "en": "The letter killeth, but the spirit giveth life."
+    }
+  ]
+}

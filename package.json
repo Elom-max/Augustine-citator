@@ -1,0 +1,14 @@
+{
+  "name": "augustine-citator",
+  "version": "1.0.0",
+  "description": "Word add-in for citing the works of Augustine of Hippo as footnotes.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "certs": "openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj \"/CN=localhost\""
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "MIT"
+}
