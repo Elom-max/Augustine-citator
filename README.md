@@ -98,10 +98,12 @@ Un bouton **"Cite Augustine"** apparaît dans le ruban **Accueil**. Cliquez dess
 
 ### Options configurables (onglet Settings)
 
-- Titres en latin ou anglais
-- Chiffres romains pour les livres
-- Inclusion de la date de composition
-- Insertion en footnote, endnote, ou inline
+- **Langue du document** : FR / EN / NL (ajuste les titres affichés, le nom de l'auteur et la mention de traduction personnelle)
+- **Édition / Série par défaut** : CChr SL, CCSL, CSEL, BA, PL, WSA
+- **Inclure la ville d'édition** (ancienne norme pré-CMOS 18)
+- **Type d'insertion dans Word** : note de bas de page, note de fin, ou inline
+- **Chiffres romains pour les livres** (cochée par défaut)
+- **Inclure la date de composition** (entre crochets, à la fin de la référence)
 
 ---
 

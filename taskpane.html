@@ -238,6 +238,25 @@
         <input type="checkbox" id="optIncludeCity"/>
         <label for="optIncludeCity">Inclure la ville d'édition (Ancienne norme pré-CMOS 18)</label>
       </div>
+
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label>Type d'insertion dans Word</label>
+        <select id="insertType">
+          <option value="footnote">Note de bas de page</option>
+          <option value="endnote">Note de fin</option>
+          <option value="inline">Citation inline (dans le texte)</option>
+        </select>
+      </div>
+
+      <div class="checkbox-group" style="margin-bottom: 8px;">
+        <input type="checkbox" id="optRoman" checked/>
+        <label for="optRoman">Chiffres romains pour les livres</label>
+      </div>
+
+      <div class="checkbox-group" style="margin-bottom: 8px;">
+        <input type="checkbox" id="optIncludeDate"/>
+        <label for="optIncludeDate">Inclure la date de composition</label>
+      </div>
     </div>
 
   </div>
@@ -337,6 +356,21 @@ let activeCategory = "all";
 let citationHistory = [];
 
 const HISTORY_KEY = 'augustine-history-kul';
+
+const I18N = {
+  FR: { author: 'Augustin', myTrans: 'traduction personnelle', ownLabel: 'Ceci est ma propre traduction', recentEmpty: 'Aucune citation récente.', inserted: 'Citation insérée ✓', copied: 'Citation copiée dans le presse-papier (mode navigateur).', noWord: "Word n'a pas répondu." },
+  EN: { author: 'Augustine',  myTrans: 'my translation',         ownLabel: 'This is my own translation',  recentEmpty: 'No recent citations.',    inserted: 'Citation inserted ✓', copied: 'Citation copied to clipboard (browser mode).',          noWord: 'Word did not respond.' },
+  NL: { author: 'Augustinus', myTrans: 'eigen vertaling',        ownLabel: 'Dit is mijn eigen vertaling', recentEmpty: 'Geen recente citaten.',  inserted: 'Citaat ingevoegd ✓', copied: 'Citaat gekopieerd naar klembord (browsermodus).',       noWord: 'Word reageerde niet.' }
+};
+function getLang() {
+  const el = document.getElementById('docLang');
+  return (el && I18N[el.value]) ? el.value : 'FR';
+}
+function applyOwnTransLabel() {
+  const t = I18N[getLang()];
+  const el = document.getElementById('ownTransLabel');
+  if (el) el.innerText = `${t.ownLabel} ([${t.myTrans}])`;
+}
 
 function escapeHtml(str) {
   const div = document.createElement('div');
@@ -498,24 +532,59 @@ function renderWorks() {
 }
 
 function renderHistory() {
-  const docLang = document.getElementById('docLang').value;
+  const t = I18N[getLang()] || I18N.FR;
   const container = document.getElementById('historyList');
   if (citationHistory.length === 0) {
-    let emptyMsg = "No recent citations.";
-    if(docLang === "FR") emptyMsg = "Aucune citation récente.";
-    if(docLang === "NL") emptyMsg = "Geen recente citaten.";
-    container.innerHTML = `<p style="text-align:center; color: var(--ink-faded); margin-top:20px;">${emptyMsg}</p>`;
+    container.innerHTML = `<p style="text-align:center; color: var(--ink-faded); margin-top:20px;">${t.recentEmpty}</p>`;
     return;
   }
 
   container.innerHTML = citationHistory.map((h, i) => {
     const d = new Date(h.time);
     return `
-    <div class="history-item" data-index="${i}">
+    <div class="history-item" data-index="${i}" title="Cliquer pour réinsérer">
       <div class="history-ref">${h.citation || 'Ref'}</div>
       <div style="font-size: 10px; color: var(--ink-faded); margin-top: 2px;">${d.toLocaleTimeString()}</div>
     </div>
   `}).join('');
+
+  container.querySelectorAll('.history-item').forEach(item => {
+    item.addEventListener('click', async () => {
+      const idx = parseInt(item.dataset.index, 10);
+      const entry = citationHistory[idx];
+      if (!entry || !entry.citation) return;
+      const insertType = (document.getElementById('insertType') || { value: 'footnote' }).value;
+      if (!officeReady) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = entry.citation;
+        try {
+          await navigator.clipboard.writeText(tmp.textContent || tmp.innerText);
+          showToast(t.copied, 'info');
+        } catch (e) {
+          showToast('Clipboard: ' + (e.message || e), 'error');
+        }
+        return;
+      }
+      try {
+        await Word.run(async (context) => {
+          const range = context.document.getSelection();
+          if (insertType === 'endnote') {
+            const en = range.insertEndnote("");
+            en.body.insertHtml(entry.citation, Word.InsertLocation.end);
+          } else if (insertType === 'inline') {
+            range.insertHtml(entry.citation, Word.InsertLocation.after);
+          } else {
+            const fn = range.insertFootnote("");
+            fn.body.insertHtml(entry.citation, Word.InsertLocation.end);
+          }
+          await context.sync();
+        });
+        showToast(t.inserted, 'success');
+      } catch (error) {
+        showToast('Erreur: ' + ((error && error.message) || t.noWord), 'error');
+      }
+    });
+  });
 }
 
 // ═══════════════════════════════════════════════
@@ -540,10 +609,12 @@ function formatCitation() {
   const textTrans = escapeHtml(document.getElementById('citeTrans').value.trim());
   const translator = escapeHtml(document.getElementById('citeTranslator').value.trim());
   const isOwnTranslation = document.getElementById('ownTranslation').checked;
+  const useRoman = !document.getElementById('optRoman') || document.getElementById('optRoman').checked;
+  const includeDate = document.getElementById('optIncludeDate') && document.getElementById('optIncludeDate').checked;
 
-  let author = "Augustinus"; // Fixe selon KUL
+  let author = I18N[docLang] ? I18N[docLang].author : 'Augustinus';
   let loc = '';
-  if (book) loc += toRoman(book);
+  if (book) loc += useRoman ? toRoman(book) : book;
   if (chapter) loc += (loc ? ', ' : '') + chapter;
   if (para) loc += (loc ? ', ' : '') + para;
 
@@ -595,18 +666,18 @@ function formatCitation() {
     if (seriesInfo) reference += `, ${seriesInfo}`;
     if (pubInfo) reference += ` ${pubInfo}`;
     if (page) reference += `, ${page}`;
+    if (includeDate && w.date) reference += ` [${w.date}]`;
   } else {
     let abbrev = capitalizeFirst(w.abbrev);
     reference = `${author}, <i>${abbrev}</i>`;
     if (loc) reference += ` ${loc}`;
     if (page) reference += `, ${page}`;
+    if (includeDate && w.date) reference += ` [${w.date}]`;
   }
 
   let finalHtml = "";
-  let myTransStr = "[my translation]";
-  if(docLang === "FR") myTransStr = "[traduction personnelle]";
-  if(docLang === "NL") myTransStr = "[eigen vertaling]";
-  
+  const myTransStr = `[${(I18N[docLang] || I18N.FR).myTrans}]`;
+
   let transMention = isOwnTranslation ? myTransStr : `trans. ${translator || 'N.'}`;
 
   if (textTrans && textLatin) {
@@ -640,9 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderFilters();
   renderWorks();
   renderHistory();
-  
-  const lang = document.getElementById('docLang').value;
-  if(lang === "FR") document.getElementById('ownTransLabel').innerText = "Ceci est ma propre traduction ([traduction personnelle])";
+  applyOwnTransLabel();
 
   // Gestion des Onglets
   document.querySelectorAll('.tab').forEach(tab => {
@@ -668,23 +737,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Changement de langue dynamique
   document.getElementById('docLang').addEventListener('change', function() {
-    const lang = this.value;
-    let label = "Ceci est ma propre traduction ([my translation])";
-    if(lang === "FR") label = "Ceci est ma propre traduction ([traduction personnelle])";
-    if(lang === "NL") label = "Ceci est ma propre traduction ([eigen vertaling])";
-    document.getElementById('ownTransLabel').innerText = label;
-    
+    applyOwnTransLabel();
     renderFilters();
-    renderWorks(); 
+    renderWorks();
+    renderHistory();
     updatePreview();
   });
 
   document.getElementById('searchInput').addEventListener('input', renderWorks);
-  
-  const inputs = ['citeStyle', 'citeBook', 'citeChapter', 'citeParagraph', 'citePage', 'citeVol', 'citeLatin', 'citeTrans', 'citeTranslator', 'optIncludeCity'];
+
+  const inputs = ['citeStyle', 'citeBook', 'citeChapter', 'citeParagraph', 'citePage', 'citeVol', 'citeLatin', 'citeTrans', 'citeTranslator', 'optIncludeCity', 'optRoman', 'optIncludeDate', 'insertType'];
   inputs.forEach(id => {
-    document.getElementById(id).addEventListener('input', updatePreview);
-    document.getElementById(id).addEventListener('change', updatePreview);
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', updatePreview);
+    el.addEventListener('change', updatePreview);
   });
 
   document.querySelectorAll('input[name="citeType"]').forEach(radio => {
@@ -696,37 +763,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Insertion Word
   document.getElementById('insertBtn').addEventListener('click', async () => {
+    const insertBtn = document.getElementById('insertBtn');
+    if (insertBtn.disabled) return;
     const citationHtml = formatCitation();
     if (!citationHtml) return;
+
+    const t = I18N[getLang()] || I18N.FR;
+    const insertType = (document.getElementById('insertType') || { value: 'footnote' }).value;
 
     citationHistory.unshift({ workId: selectedWork.id, time: new Date().getTime(), citation: citationHtml });
     if(citationHistory.length > 50) citationHistory.pop();
     saveHistory(citationHistory);
 
-    if (!officeReady) {
-      const temp = document.createElement('div');
-      temp.innerHTML = citationHtml;
-      try {
-        await navigator.clipboard.writeText(temp.textContent || temp.innerText);
-        showToast('Citation copiée dans le presse-papier (mode navigateur).', 'info');
-      } catch (e) {
-        showToast('Impossible de copier dans le presse-papier : ' + (e.message || e), 'error');
-      }
-      return;
-    }
-
+    insertBtn.disabled = true;
     try {
-      await Word.run(async (context) => {
-        const range = context.document.getSelection();
-        const footnote = range.insertFootnote("");
-        footnote.body.insertHtml(citationHtml, Word.InsertLocation.end);
-        await context.sync();
-      });
-      showToast('Citation insérée ✓', 'success');
-    } catch (error) {
-      console.error(error);
-      const msg = (error && error.message) ? error.message : 'Word n\'a pas répondu.';
-      showToast('Erreur lors de l\'insertion : ' + msg, 'error');
+      if (!officeReady) {
+        const temp = document.createElement('div');
+        temp.innerHTML = citationHtml;
+        try {
+          await navigator.clipboard.writeText(temp.textContent || temp.innerText);
+          showToast(t.copied, 'info');
+        } catch (e) {
+          showToast('Clipboard: ' + (e.message || e), 'error');
+        }
+        return;
+      }
+
+      try {
+        await Word.run(async (context) => {
+          const range = context.document.getSelection();
+          if (insertType === 'endnote') {
+            const endnote = range.insertEndnote("");
+            endnote.body.insertHtml(citationHtml, Word.InsertLocation.end);
+          } else if (insertType === 'inline') {
+            range.insertHtml(citationHtml, Word.InsertLocation.after);
+          } else {
+            const footnote = range.insertFootnote("");
+            footnote.body.insertHtml(citationHtml, Word.InsertLocation.end);
+          }
+          await context.sync();
+        });
+        showToast(t.inserted, 'success');
+      } catch (error) {
+        console.error(error);
+        const msg = (error && error.message) ? error.message : t.noWord;
+        showToast('Erreur: ' + msg, 'error');
+      }
+    } finally {
+      insertBtn.disabled = false;
     }
   });
 });

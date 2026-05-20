@@ -60,7 +60,9 @@ function handler(req, res) {
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'no-store',
     });
-    fs.createReadStream(filePath).pipe(res);
+    const stream = fs.createReadStream(filePath);
+    stream.on('error', () => res.destroy());
+    stream.pipe(res);
   });
 }
 
