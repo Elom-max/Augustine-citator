@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PDF → EPUB — convertisseur pour liseuses</title>
+<style>
+  :root { --accent:#7c3aed; --bg:#faf9fb; --card:#fff; --line:#e6e3ec; --muted:#6b6478; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+         background:var(--bg); color:#1d1730; line-height:1.5; }
+  .wrap { max-width:680px; margin:0 auto; padding:32px 20px 80px; }
+  h1 { font-size:1.5rem; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 28px; font-size:.95rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin-bottom:18px; }
+  #drop { border:2px dashed #c9c2d8; border-radius:14px; padding:46px 20px; text-align:center;
+          cursor:pointer; transition:.15s; background:#fff; }
+  #drop.over { border-color:var(--accent); background:#f5f1ff; }
+  #drop h2 { margin:.2em 0; font-size:1.1rem; }
+  #drop p { color:var(--muted); margin:.3em 0 0; font-size:.9rem; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  label { display:block; font-size:.8rem; color:var(--muted); margin-bottom:4px; }
+  input, select { width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:9px; font-size:.95rem; background:#fff; }
+  .full { grid-column:1 / -1; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:10px; padding:12px 20px;
+           font-size:1rem; font-weight:600; cursor:pointer; width:100%; }
+  button:disabled { opacity:.5; cursor:default; }
+  .row { display:flex; gap:12px; align-items:center; }
+  .badge { font-size:.85rem; background:#f0ecfa; border-radius:8px; padding:8px 12px; color:#4b3b73; }
+  .warn { background:#fff4e5; border:1px solid #ffd9a8; color:#7a4d00; border-radius:10px; padding:12px 14px; font-size:.9rem; margin-top:12px; }
+  .err  { background:#fdecec; border:1px solid #f5b5b5; color:#8a1c1c; border-radius:10px; padding:12px 14px; font-size:.9rem; margin-top:12px; }
+  .ok   { background:#e9f9ef; border:1px solid #b8e6c9; color:#1d6b3a; }
+  ul.steps { color:var(--muted); font-size:.88rem; padding-left:18px; margin:14px 0 0; }
+  .hidden { display:none; }
+  a.dl { display:inline-block; margin-top:10px; }
+  .stat { font-variant-numeric:tabular-nums; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>PDF → EPUB</h1>
+  <p class="sub">Convertit un PDF en e-book <strong>reflowable</strong> (texte qui s'adapte à l'écran),
+    lisible sur Google Play Livres, Apple Livres, Kobo, Calibre… Tout se passe dans votre navigateur :
+    le PDF n'est jamais envoyé sur un serveur.</p>
+
+  <div class="card">
+    <div id="drop">
+      <h2>📄 Déposez un PDF ici</h2>
+      <p>ou cliquez pour choisir un fichier</p>
+      <input id="file" type="file" accept="application/pdf,.pdf" class="hidden"/>
+    </div>
+    <div id="meta" class="hidden" style="margin-top:18px;">
+      <div class="row" style="margin-bottom:14px;">
+        <span class="badge" id="fileinfo"></span>
+      </div>
+      <div class="grid">
+        <div class="full"><label>Titre</label><input id="title"/></div>
+        <div><label>Auteur</label><input id="author"/></div>
+        <div><label>Langue</label>
+          <select id="lang">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+            <option value="la">Latin</option>
+            <option value="nl">Nederlands</option>
+            <option value="de">Deutsch</option>
+            <option value="es">Español</option>
+            <option value="it">Italiano</option>
+          </select>
+        </div>
+        <div class="full"><button id="go">Convertir en EPUB</button></div>
+      </div>
+      <div id="status"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <strong>Bon à savoir</strong>
+    <ul class="steps">
+      <li>Fonctionne avec les PDF dont le texte est <em>sélectionnable</em> (générés par ordinateur).</li>
+      <li>Les PDF <em>scannés</em> (images de pages) ne contiennent pas de texte : l'outil vous préviendra, un OCR serait alors nécessaire.</li>
+      <li>Sur Google Play Livres : <em>play.google.com/books</em> → <em>Importer</em> → choisissez le fichier .epub.</li>
+    </ul>
+  </div>
+</div>
+
+<script type="module">
+import * as pdfjs from './vendor/pdf.min.mjs';
+import { buildBook, buildEpub, mapTextContent } from './lib/core.mjs';
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL('./vendor/pdf.worker.min.mjs', import.meta.url).href;
+
+const $ = (id) => document.getElementById(id);
+const drop = $('drop'), fileInput = $('file');
+let currentFile = null;
+
+drop.addEventListener('click', () => fileInput.click());
+['dragenter', 'dragover'].forEach((e) =>
+  drop.addEventListener(e, (ev) => { ev.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach((e) =>
+  drop.addEventListener(e, (ev) => { ev.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', (ev) => {
+  const f = ev.dataTransfer.files[0];
+  if (f) selectFile(f);
+});
+fileInput.addEventListener('change', () => fileInput.files[0] && selectFile(fileInput.files[0]));
+
+function baseName(name) { return name.replace(/\.[^.]+$/, ''); }
+
+function selectFile(f) {
+  if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') {
+    setStatus('<div class="err">Ce n\'est pas un fichier PDF.</div>');
+    return;
+  }
+  currentFile = f;
+  $('meta').classList.remove('hidden');
+  $('fileinfo').textContent = `${f.name} · ${(f.size / 1024 / 1024).toFixed(2)} Mo`;
+  $('title').value = baseName(f.name);
+  setStatus('');
+}
+
+function setStatus(html) { $('status').innerHTML = html; }
+
+$('go').addEventListener('click', async () => {
+  if (!currentFile) return;
+  $('go').disabled = true;
+  setStatus('<div class="badge">⏳ Lecture du PDF…</div>');
+  try {
+    const buf = new Uint8Array(await currentFile.arrayBuffer());
+    const doc = await pdfjs.getDocument({ data: buf, isEvalSupported: false }).promise;
+
+    let info = {};
+    try { info = (await doc.getMetadata())?.info || {}; } catch {}
+
+    const pages = [];
+    for (let n = 1; n <= doc.numPages; n++) {
+      setStatus(`<div class="badge">⏳ Extraction du texte… page ${n}/${doc.numPages}</div>`);
+      const page = await doc.getPage(n);
+      const vp = page.getViewport({ scale: 1 });
+      const tc = await page.getTextContent();
+      pages.push(mapTextContent(tc, vp.width, vp.height));
+      page.cleanup();
+    }
+
+    const book = buildBook(pages, {
+      title: $('title').value.trim() || info.Title || baseName(currentFile.name),
+      author: $('author').value.trim() || info.Author,
+      language: $('lang').value,
+    });
+
+    const epub = buildEpub(book);
+    const blob = new Blob([epub], { type: 'application/epub+zip' });
+    const url = URL.createObjectURL(blob);
+    const fname = baseName(currentFile.name) + '.epub';
+
+    let html = '';
+    for (const w of book.warnings) html += `<div class="warn">⚠️ ${w}</div>`;
+    html += `<div class="badge ok" style="margin-top:12px;">
+      ✓ Conversion terminée — <span class="stat">${book.stats.pages}</span> pages,
+      <span class="stat">${book.stats.chapters}</span> chapitres,
+      <span class="stat">${book.stats.chars.toLocaleString('fr')}</span> caractères.</div>
+      <a class="dl" href="${url}" download="${fname}"><button style="width:auto;">⬇️ Télécharger ${fname}</button></a>`;
+    setStatus(html);
+  } catch (e) {
+    setStatus(`<div class="err">Échec : ${e.message}</div>`);
+  } finally {
+    $('go').disabled = false;
+  }
+});
+</script>
+</body>
+</html>
