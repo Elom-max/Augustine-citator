@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "styloscan"
+version = "0.1.0"
+description = "Stylométrie pour détecter et quantifier l'usage d'IA dans l'écrit scientifique (FR/EN/NL)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+dependencies = [
+    "numpy>=1.23",
+    "scikit-learn>=1.1",
+    "matplotlib>=3.5",
+]
+
+[project.optional-dependencies]
+web = ["flask>=2.2"]
+
+[project.scripts]
+styloscan = "styloscan.cli:main"
+
+[tool.setuptools]
+packages = ["styloscan"]
