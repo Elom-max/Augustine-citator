@@ -114,6 +114,29 @@ function stripMargins(pageLines, pageHeight) {
 
 const ENDS_SENTENCE = /[.!?»”"')\]]\s*$/;
 
+// Split a flat block list into chapters, starting a new one at each top-level heading.
+function blocksToChapters(blocks, meta) {
+  const headingLevels = blocks.filter((b) => b.type === 'h').map((b) => b.level);
+  const splitLevel = headingLevels.length ? Math.min(...headingLevels) : null;
+  const chapters = [];
+  let cur = null;
+  const newChapter = (title) => {
+    cur = { title: title || `Section ${chapters.length + 1}`, blocks: [] };
+    chapters.push(cur);
+  };
+  for (const b of blocks) {
+    if (b.type === 'h' && b.level === splitLevel) {
+      newChapter(b.text);
+      cur.blocks.push(b);
+    } else {
+      if (!cur) newChapter(meta.title || 'Texte');
+      cur.blocks.push(b);
+    }
+  }
+  if (!chapters.length) newChapter(meta.title || 'Texte');
+  return chapters;
+}
+
 /**
  * Turn raw pages into a structured book.
  * @param {{width:number,height:number,items:any[]}[]} pages
@@ -196,25 +219,7 @@ export function buildBook(pages, meta = {}) {
   }
   flushPara();
 
-  // Split into chapters at top-level headings.
-  const headingLevels = blocks.filter((b) => b.type === 'h').map((b) => b.level);
-  const splitLevel = headingLevels.length ? Math.min(...headingLevels) : null;
-  const chapters = [];
-  let cur = null;
-  const newChapter = (title) => {
-    cur = { title: title || `Section ${chapters.length + 1}`, blocks: [] };
-    chapters.push(cur);
-  };
-  for (const b of blocks) {
-    if (b.type === 'h' && b.level === splitLevel) {
-      newChapter(b.text);
-      cur.blocks.push(b);
-    } else {
-      if (!cur) newChapter(meta.title || 'Texte');
-      cur.blocks.push(b);
-    }
-  }
-  if (!chapters.length) newChapter(meta.title || 'Texte');
+  const chapters = blocksToChapters(blocks, meta);
 
   const charCount = blocks.reduce((n, b) => n + b.text.length, 0);
   const warnings = [];
@@ -235,6 +240,74 @@ export function buildBook(pages, meta = {}) {
     chapters,
     warnings,
     stats: { pages: pages.length, chars: charCount, chapters: chapters.length },
+  };
+}
+
+/**
+ * Build a book from plain text (or lightly marked-up text). Paragraphs are
+ * separated by blank lines; soft-wrapped lines inside a paragraph are joined
+ * (honouring hyphenation). Headings are recognised from Markdown-style
+ * `#`/`##`/`###` prefixes or from "Chapitre/Chapter/Partie/Livre…" lines.
+ * @param {string} text
+ * @param {{title?:string,author?:string,language?:string}} meta
+ */
+export function buildBookFromText(text, meta = {}) {
+  const lines = String(text)
+    .replace(/\r\n?/g, '\n')
+    .replace(/\u00a0/g, ' ')
+    .split('\n');
+
+  const blocks = [];
+  let para = '';
+  const flushPara = () => {
+    const t = para.replace(/\s+/g, ' ').trim();
+    if (t) blocks.push({ type: 'p', text: t });
+    para = '';
+  };
+  const appendLine = (s) => {
+    if (para === '') para = s;
+    else if (/[‐-]$/.test(para) && /^[a-zà-ſ]/.test(s)) para = para.replace(/[‐-]$/, '') + s;
+    else para += ' ' + s;
+  };
+
+  const headingOf = (line) => {
+    const md = /^(#{1,3})\s+(.+?)\s*#*$/.exec(line);
+    if (md) return { level: md[1].length, text: md[2].trim() };
+    if (line.length <= 80 && /^(chapitre|chapter|chap\.|partie|livre|section)\b/i.test(line))
+      return { level: 1, text: line };
+    return null;
+  };
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (line === '') {
+      flushPara();
+      continue;
+    }
+    const h = headingOf(line);
+    if (h) {
+      flushPara();
+      blocks.push({ type: 'h', level: h.level, text: h.text });
+    } else {
+      appendLine(line);
+    }
+  }
+  flushPara();
+
+  const chapters = blocksToChapters(blocks, meta);
+  const charCount = blocks.reduce((n, b) => n + b.text.length, 0);
+  const warnings = [];
+  if (!charCount) warnings.push('Aucun texte exploitable n’a été trouvé dans la source fournie.');
+
+  return {
+    meta: {
+      title: meta.title || 'Document',
+      author: meta.author || 'Inconnu',
+      language: meta.language || 'fr',
+    },
+    chapters,
+    warnings,
+    stats: { pages: 0, chars: charCount, chapters: chapters.length },
   };
 }
 
