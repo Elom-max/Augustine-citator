@@ -17,15 +17,24 @@ de votre côté.
 modèle risque d'apprendre 2 auteurs, pas « l'humain ». Objectif : **30-50 textes
 FR variés**, registre académique **moderne** (comparable aux sorties IA).
 
-*Comment :*
-1. **Mine du Drive de l'utilisateur** : il y a quantité d'articles/livres FR (et
-   anglais moderne) dans son Google Drive. Je peux les rechercher et les lire pour
-   en extraire les features (contenu gardé hors de mon contexte, rien n'est
-   reproduit). → me dire « cherche des textes humains dans mon Drive » + préciser
-   le(s) dossier(s) et le volume souhaité (cf. question de cadrage en attente).
-2. Compléter via `docs/SOURCES_LIBRES.md` si besoin (Wikisource, Gallica, CCEL…).
-3. **reMarkable : non accessible** depuis cet environnement (pas de connecteur).
-   Passer par la synchro reMarkable → Drive, ou exporter les PDF vers Drive.
+*Décidé avec l'utilisateur (cadrage du 27/05) :*
+- **Étendue : tout le Drive, par mots-clés.** Je recherche dans l'ensemble du Drive
+  les articles/livres du domaine (augustinien, patristique, philosophie ancienne,
+  rhétorique/théologie), **je soumets la liste des fichiers trouvés AVANT toute
+  ingestion**, et je n'extrais qu'après feu vert. Contenu gardé hors de mon
+  contexte (via sous-agent), rien n'est reproduit.
+- **Langues : FR et EN moderne en parallèle** (combler FR en priorité de fait,
+  mais collecter les deux).
+- Mots-clés de départ : Augustin/Augustine, Hippone, *De Trinitate*, *Confessiones*,
+  *De ordine*, *De doctrina christiana*, patristique, rhétorique antique, Lamberigts,
+  Dupont… (à ajuster).
+- Déclencheur demain : « cherche des textes humains dans mon Drive ».
+
+*Compléments :*
+- `docs/SOURCES_LIBRES.md` (Wikisource, Gallica, CCEL…) si besoin de plus.
+- **reMarkable : non accessible** ici (pas de connecteur). Synchroniser
+  reMarkable → Drive, ou exporter les PDF vers Drive, pour que je puisse les lire.
+- Préférer des sources **nées-numériques** (cf. Priorité 3 : typographie fiable).
 
 *Idéal (étalon-or) :* faire rédiger par un humain **le même prompt** que celui
 soumis aux IA → supprime la confusion genre/sujet.
