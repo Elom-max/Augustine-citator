@@ -12,7 +12,7 @@ départ, à enrichir. Aucune dépendance réseau / aucun modèle à télécharge
 
 from __future__ import annotations
 
-SUPPORTED = ("fr", "en", "nl")
+SUPPORTED = ("fr", "en", "nl", "la")
 
 # --- Mots-outils (function words) : noyau servant d'empreinte stylistique.
 # Volontairement courts mais discriminants ; ils dominent les analyses
@@ -44,6 +44,15 @@ FUNCTION_WORDS = {
         "ik", "zijn", "haar", "hun", "ons", "jouw", "niet", "geen", "zeer",
         "als", "dan", "dus", "echter", "bovendien", "daarnaast", "derhalve",
     ],
+    "la": [
+        "et", "in", "est", "non", "ad", "ut", "cum", "qui", "quae", "quod",
+        "sed", "si", "ex", "de", "per", "atque", "ac", "enim", "autem", "nam",
+        "esse", "sunt", "hoc", "haec", "hic", "nec", "ne", "ita", "quam",
+        "ab", "pro", "sine", "sub", "super", "inter", "ergo", "igitur", "vero",
+        "quidem", "tamen", "etiam", "quoque", "aut", "vel", "neque", "ipse",
+        "idem", "iam", "tunc", "ille", "illa", "illud", "eius", "eorum",
+        "id", "ea", "eo", "a", "e", "aut", "an", "dum", "modo",
+    ],
 }
 
 # --- Connecteurs de transition « formels » sur-employés par les LLM.
@@ -69,6 +78,13 @@ AI_TRANSITION_WORDS = {
         "het is belangrijk om", "het is vermeldenswaard", "in conclusie",
         "samenvattend", "over het algemeen", "in dit verband", "kortom",
     ],
+    # Latin : connecteurs formels qu'un LLM tend à multiplier. SPÉCULATIF.
+    "la": [
+        "praeterea", "insuper", "igitur", "ergo", "itaque", "quapropter",
+        "denique", "deinde", "primum", "postremo", "scilicet", "nimirum",
+        "quocirca", "proinde", "porro", "ad summam", "in conclusione",
+        "ut supra dictum est", "notandum est", "memorandum est",
+    ],
 }
 
 # --- « Tics » lexicaux caractéristiques de l'écriture LLM (surtout GPT).
@@ -92,6 +108,15 @@ AI_MARKER_WORDS = {
         "naadloos", "transformatief", "cruciaal", "navigeren", "domein",
         "schatkamer", "veelzijdig", "talloze",
     ],
+    # Latin : « tics » lexicaux hypothétiques d'un LLM (abstractions/intensifs
+    # sur-employés). TRÈS SPÉCULATIF — aucun usage LLM latin établi ;
+    # n'oriente le score qu'à titre illustratif, le modèle supervisé tranche.
+    "la": [
+        "praesertim", "maxime", "profecto", "sane", "vere", "penitus",
+        "funditus", "summopere", "imprimis", "necessario", "manifeste",
+        "complexus", "intricatus", "fundamentalis", "structura", "processus",
+        "aspectus", "ratio holistica", "synergia", "paradigma",
+    ],
 }
 
 # --- Subordonnants (proxy de complexité syntaxique : densité de subordination).
@@ -105,6 +130,9 @@ SUBORDINATORS = {
     "nl": ["dat", "die", "welke", "wie", "omdat", "hoewel", "terwijl",
            "zodat", "indien", "als", "wanneer", "voordat", "nadat", "totdat",
            "aangezien"],
+    "la": ["ut", "cum", "quod", "quia", "quoniam", "si", "nisi", "quamquam",
+           "quamvis", "dum", "donec", "antequam", "postquam", "ubi", "quando",
+           "ne", "qui", "quae", "quod", "quem", "cur", "etsi", "tametsi"],
 }
 
 # --- Booster/hedge (registre épistémique). Forte présence de hedges
@@ -116,6 +144,8 @@ HEDGES = {
            "relatively", "to some extent", "generally", "often", "arguably"],
     "nl": ["misschien", "waarschijnlijk", "lijkt", "zou kunnen", "enigszins",
            "relatief", "in zekere mate", "doorgaans", "vaak"],
+    "la": ["fortasse", "fortassis", "videtur", "potest", "quodammodo", "fere",
+           "plerumque", "ferme", "quasi", "veluti", "forsitan"],
 }
 
 # Approximations de comptage de syllabes (voyelles) par langue, pour la
@@ -124,6 +154,7 @@ VOWELS = {
     "fr": "aàâeéèêëiîïoôuùûüy",
     "en": "aeiouy",
     "nl": "aeiouyé",
+    "la": "aeiouyāēīōūăĕĭŏŭ",
 }
 
 
@@ -132,11 +163,26 @@ def _tokens_lower(text: str):
     return re.findall(r"[^\W\d_]+", text.lower(), flags=re.UNICODE)
 
 
+# Marqueurs très discriminants par langue (départage le recouvrement commun).
+_DISCRIMINANTS = {
+    "fr": {"le", "la", "les", "des", "une", "est", "dans", "pour", "que",
+           "été", "cette", "aux", "avec", "sont", "plus"},
+    "nl": {"het", "een", "van", "en", "de", "dat", "niet", "zijn", "voor",
+           "wordt", "deze", "maar", "ook", "worden"},
+    "en": {"the", "of", "and", "to", "is", "in", "that", "for", "with",
+           "this", "was", "are", "which", "by"},
+    "la": {"est", "et", "non", "ut", "cum", "quod", "enim", "autem", "sunt",
+           "quae", "atque", "ipse", "esse", "nam", "sed", "hoc", "igitur"},
+}
+
+
 def detect_language(text: str) -> str:
     """Détection de langue par recouvrement de mots-outils (sans réseau).
 
-    Renvoie 'fr', 'en' ou 'nl'. Robuste pour des textes de quelques phrases.
-    Départage par fréquence relative des mots-outils de chaque langue.
+    Renvoie 'fr', 'en', 'nl' ou 'la'. Robuste pour des textes de quelques
+    phrases. Départage par fréquence relative des mots-outils + discriminants.
+    Le latin partage beaucoup de mots brefs avec les langues romanes ; ses
+    discriminants (esse, enim, atque, igitur, -que…) lèvent l'ambiguïté.
     """
     toks = _tokens_lower(text)
     if not toks:
@@ -145,13 +191,8 @@ def detect_language(text: str) -> str:
     for lang in SUPPORTED:
         fw = set(FUNCTION_WORDS[lang])
         counts[lang] = sum(1 for t in toks if t in fw)
-    # Quelques marqueurs très discriminants pour départager fr/nl/en.
-    disc = {
-        "fr": {"le", "la", "les", "des", "une", "est", "dans", "pour", "que"},
-        "nl": {"het", "een", "van", "en", "de", "dat", "niet", "zijn", "voor"},
-        "en": {"the", "of", "and", "to", "is", "in", "that", "for", "with"},
-    }
     for lang in SUPPORTED:
-        counts[lang] += 1.5 * sum(1 for t in toks if t in disc[lang])
-    best = max(counts, key=counts.get)
-    return best
+        counts[lang] += 1.5 * sum(1 for t in toks if t in _DISCRIMINANTS[lang])
+    # Indice latin fort : enclitique -que et terminaisons fréquentes.
+    counts["la"] += 1.0 * sum(1 for t in toks if len(t) > 3 and t.endswith("que"))
+    return max(counts, key=counts.get)

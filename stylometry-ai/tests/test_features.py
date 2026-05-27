@@ -24,6 +24,11 @@ NL = ("Het is belangrijk om dieper in te gaan op de complexe dynamiek. "
       "Bovendien moeten onderzoekers een ingewikkeld landschap navigeren. "
       "Daarnaast onderstrepen robuuste methoden de geloofwaardigheid.")
 
+LA = ("Deus creator omnium est, et per ipsum facta sunt omnia quae in caelo "
+      "et in terra sunt. Ratio igitur ordinem rerum quaerit, cum anima ad "
+      "veritatem contendit atque per gradus disciplinarum ascendit. Nam quod "
+      "verum est non potest non esse verum, sicut quod bonum est bonum manet.")
+
 
 def test_feature_vector_complete():
     fr = extract_features(AI_EN, language="en")
@@ -37,6 +42,14 @@ def test_language_detection():
     assert detect_language(AI_EN) == "en"
     assert detect_language(HUMAN_FR) == "fr"
     assert detect_language(NL) == "nl"
+    assert detect_language(LA) == "la"
+
+
+def test_latin_feature_vector_complete():
+    fr = extract_features(LA, language="la")
+    assert fr.language == "la" and fr.n_words > 0
+    for n in FEATURE_NAMES:
+        assert n in fr.features and isinstance(fr.features[n], float)
 
 
 def test_ai_scores_higher_than_human():
