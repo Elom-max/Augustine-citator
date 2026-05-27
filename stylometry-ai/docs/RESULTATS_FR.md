@@ -57,8 +57,13 @@ Top features (importance de Gini, toutes features) : `list_marker_ratio` (0.19),
    ≥ 30-50 textes humains FR variés.
 2. **Apparier genre/sujet/longueur** : idéalement, faire rédiger par des humains le
    *même prompt* que celui soumis aux IA (étalon-or anti-confusion).
-3. **Neutraliser la typographie** avant extraction (normaliser guillemets/tirets)
-   pour supprimer l'artefact `curly_quote_ratio`.
+3. **Typographie = signature, pas artefact à jeter.** La typographie discrimine
+   réellement les outils (tiret cadratin de ChatGPT, guillemets droits de Claude…).
+   On la **conserve et on l'enrichit** (signatures par modèle). Réserve : ne comparer
+   qu'à **chaîne de mise en forme comparable** — privilégier des textes humains
+   nés-numériques, pour que le signal reflète l'auteur et non la numérisation (dans
+   ce 1ᵉʳ test, l'écart sur les guillemets venait surtout de l'OCR des sources
+   humaines anciennes).
 4. **Ne pas recalibrer les seuils heuristiques FR sur ce seul échantillon** : trop
    petit et confondu, le risque de surajustement est élevé. Attendre un corpus FR
    humain plus large et diversifié.

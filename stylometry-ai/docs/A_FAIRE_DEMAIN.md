@@ -18,22 +18,33 @@ modèle risque d'apprendre 2 auteurs, pas « l'humain ». Objectif : **30-50 tex
 FR variés**, registre académique **moderne** (comparable aux sorties IA).
 
 *Comment :*
-1. Piochez dans `docs/SOURCES_LIBRES.md` (Wikisource Raulx, Gallica, CCEL…) **et**
-   dans votre Zotero/bibliothèque : articles récents, chapitres, vos propres écrits.
-2. Déposez les fichiers (.txt/.pdf/.docx) dans `Drive > … > fichier expert > Humain`.
-3. Dites-moi « ré-ingère et ré-entraîne ».
+1. **Mine du Drive de l'utilisateur** : il y a quantité d'articles/livres FR (et
+   anglais moderne) dans son Google Drive. Je peux les rechercher et les lire pour
+   en extraire les features (contenu gardé hors de mon contexte, rien n'est
+   reproduit). → me dire « cherche des textes humains dans mon Drive » + préciser
+   le(s) dossier(s) et le volume souhaité (cf. question de cadrage en attente).
+2. Compléter via `docs/SOURCES_LIBRES.md` si besoin (Wikisource, Gallica, CCEL…).
+3. **reMarkable : non accessible** depuis cet environnement (pas de connecteur).
+   Passer par la synchro reMarkable → Drive, ou exporter les PDF vers Drive.
 
 *Idéal (étalon-or) :* faire rédiger par un humain **le même prompt** que celui
 soumis aux IA → supprime la confusion genre/sujet.
 
-## Priorité 3 — Neutraliser l'artefact typographique (15 min, côté code)
+## Priorité 3 — Exploiter la typographie comme SIGNATURE (et non la supprimer)
 
-*Pourquoi :* `curly_quote_ratio` (guillemets « " " » vs droits) gonfle le score
-sans rien dire de l'auteur — c'est un artefact de format.
+*Constat de l'utilisateur (validé) :* la typographie est un **critère discriminant**
+des outils IA — tiret cadratin (—) sur-employé par ChatGPT, guillemets droits de
+Claude, guillemets courbes d'autres, puces, etc. On la **conserve et on l'enrichit**.
 
-*Comment (moi) :* normaliser guillemets/tirets/apostrophes dans `features.py`
-avant extraction, retirer `curly_quote_ratio` des features discriminantes, puis
-ré-entraîner et comparer. Dites « applique la normalisation typographique ».
+*Comment (moi) :*
+- Garder `emdash_per_1k`, `curly_quote_ratio`, `list_marker_ratio` ; ajouter des
+  **signatures par modèle** dans `_guess_tool` (`scoring.py`) : ex. em-dash élevé →
+  ChatGPT ; guillemets droits + peu de puces → Claude ; etc.
+- **Garde-fou anti-confusion** (≠ neutralisation) : ne comparer que des textes à
+  **chaîne de mise en forme comparable**. Préférer des sources humaines
+  **nées-numériques** (pas d'OCR de scans anciens) pour que la typographie reflète
+  l'auteur et non la numérisation. Quand ce n'est pas possible, signaler la réserve.
+- Dire « ajoute les signatures typographiques par modèle » pour lancer ce volet.
 
 ## Priorité 4 — Compléter IA pour l'anglais et le latin
 
